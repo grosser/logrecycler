@@ -1,0 +1,25 @@
+name: Build
+on: release # pushing does not allow uploading artifacts
+jobs:
+  release-linux-amd64:
+    name: release linux/amd64
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@master
+    - name: compile and release
+      uses: wangyoucao577/go-release-action@v1.4
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        goarch: amd64
+        goos: linux
+  release-darwin-amd64:
+    name: release darwin/amd64
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@master
+    - name: compile and release
+      uses: wangyoucao577/go-release-action@v1.4
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        goarch: amd64
+        goos: darwin
