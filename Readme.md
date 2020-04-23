@@ -21,6 +21,8 @@ stdout: {"ts":"2020-05-30 10:13:00","level":"error","message":"error connecting 
 
 ## Install
 
+Download [latest binary](https://github.com/grosser/logrecycler/releases):
+
 ```
 curl -sfL <PICK URL FROM RELEASES PAGE> | tar -zx && && chmod +x logrecycler
 ```
@@ -75,3 +77,9 @@ Pipe your logs to the recycler:
 ```
 <your-program-here> | logrecycler
 ```
+
+# Development
+
+## Release
+
+Create a new release via github UI, workflow will automatically build a new binary.
