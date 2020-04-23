@@ -1,11 +1,11 @@
 # Logrecycler [![Build Status](https://travis-ci.org/grosser/logrecycler.svg)](https://travis-ci.org/grosser/logrecycler) [![coverage](https://img.shields.io/badge/coverage-100%25-success.svg)](https://github.com/grosser/go-testcov) [![Build](https://github.com/grosser/logrecycler/workflows/Build/badge.svg)](https://github.com/grosser/logrecycler/releases)
 
 Re-process logs from applications you cannot modify to:
-- convert plaintext to json
+- convert plaintext from stdin to json
 - remove noise
 - add log levels / timestamp / details / captured values
-- emit prometheus metrics
-- emit statsd metrics
+- emit prometheus metric
+- emit statsd metric
 
 
 ## Example
@@ -33,15 +33,17 @@ Configure a `logrecycler.yaml` in your project root:
 
 ```yaml
 # optional settings
-timestamp_key: ts # what to call the timestamp in the logs (default: no timestamp)
-level_key: level # what to call the level in the logs (default: no level)
-message_key: msg # what to call the message in the logs (default: message)
-preprocess: '[^\]]+\] (?P<message>.*)' # reduce noise from message by replacing it with captured
+timestamp_key: ts # what to call the timestamp in the logs (for example @timestamp, ts, leave empty for no timestamp)
+level_key: level # what to call the level in the logs (for example level/lvl/severity, leave empty for no level)
+message_key: msg # what to call the message in the logs (leave empty for 'message')
+preprocess: '[^\]]+\] (?P<message>.*)' # reduce noise from message by replacing it with captured (for example remove, leave empty for none)
 
-# enable prometheus /metrics (try to use the same `add` + named captures everywhere)
-prometheus_port: 1234 
+# enable prometheus /metrics
+# when using: try to use the same `add` value and the same named regex captures in patterns below
+# to avoid running out of memory
+prometheus_port: 1234
 
-# enable statsd metrics
+# enable statsd metric
 statsd_address: 0.0.0.0:8125
 statsd_metric: my_app.logs
 
@@ -51,7 +53,7 @@ patterns:
 - regex: 'error.*parsing' # log line needs to match this
   level: ERROR
   add: # will appear in log and metric
-    pattern: parsing-error
+    pattern: parsing-error # using the same pattern key here, so we can group by pattern when reporting 
 # named captures go into logs, replacing message here too
 - regex: '(?P<message>error connecting .*) (?P<host>\S+):(?P<port>\d+)'
   level: ERROR
