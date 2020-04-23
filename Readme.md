@@ -1,4 +1,4 @@
-# Logrecycler [![Build Status](https://travis-ci.org/grosser/logrecycler.svg)](https://travis-ci.org/grosser/logrecycler) [![coverage](https://img.shields.io/badge/coverage-100%25-success.svg)](https://github.com/grosser/go-testcov)
+# Logrecycler [![Build Status](https://travis-ci.org/grosser/logrecycler.svg)](https://travis-ci.org/grosser/logrecycler) [![coverage](https://img.shields.io/badge/coverage-100%25-success.svg)](https://github.com/grosser/go-testcov) [![Build](https://github.com/grosser/logrecycler/workflows/Build/badge.svg)](https://github.com/grosser/logrecycler/releases)
 
 Re-process logs from applications you cannot modify to:
 - convert plaintext to json
