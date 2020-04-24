@@ -24,7 +24,7 @@ stdout: {"ts":"2020-05-30 10:13:00","level":"error","message":"error connecting 
 Download [latest binary](https://github.com/grosser/logrecycler/releases):
 
 ```
-curl -sfL <PICK URL FROM RELEASES PAGE> | tar -zx && chmod +x logrecycler
+curl -sfL <PICK URL FROM RELEASES PAGE> | tar -zx && chmod +x logrecycler && logrecycler -help
 ```
 
 ## Configure

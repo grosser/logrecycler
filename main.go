@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"context"
+	"flag"
 	"fmt"
 	"github.com/DataDog/datadog-go/statsd"
 	"github.com/prometheus/client_golang/prometheus"
@@ -43,7 +44,10 @@ type Config struct {
 }
 
 func main() {
+	parseFlags()
+
 	config := readConfig()
+
 	var metric *prometheus.CounterVec
 	var stats *statsd.Client
 	var srv *http.Server
@@ -78,6 +82,16 @@ func main() {
 		log := processLine(line, config, metric, stats)
 		fmt.Println(log.ToJson())
 	}
+}
+
+// parse flags ... so we fail on unknown flags and users can call `-help`
+// TODO: test it by overriding os.Exit
+func parseFlags() {
+	flag.Usage = func() {
+		// untested section ... TODO: trigger a noop main() and then call it directly
+		fmt.Fprintf(os.Stderr, "Usage:\npipe logs to logrecycler\nconfigure with logrecycler.yaml\n")
+	}
+	flag.Parse()
 }
 
 // https://www.golangprograms.com/remove-duplicate-values-from-slice.html
