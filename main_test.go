@@ -87,6 +87,12 @@ var _ = Describe("main", func() {
 		})
 	})
 
+	It("can discard", func() {
+		withConfig("---\npatterns:\n- regex: hi\n  discard: true", func() {
+			Expect(parse("hi foo")).To(Equal(``))
+		})
+	})
+
 	Context("preprocess", func() {
 		It("Ignores non-matching", func() {
 			withConfig("---\npreprocess: (?P<greeting>oops) (?P<message>.*)\npatterns:\n- regex: (?P<rest>.*)", func() {
@@ -119,6 +125,13 @@ var _ = Describe("main", func() {
 		It("reports added fields", func() {
 			port := randomPort()
 			withConfig("---\nprometheus_port: "+port+"\npatterns:\n- regex: hi\n  add:\n    foo: bar", func() {
+				Expect(prometheusMetrics(port)).To(Equal("# HELP logs_total Total number of logs received\n# TYPE logs_total counter\nlogs_total{foo=\"bar\"} 1\n"))
+			})
+		})
+
+		It("ignores labels from discarded fields", func() {
+			port := randomPort()
+			withConfig("---\nprometheus_port: "+port+"\npatterns:\n- regex: hi\n  add:\n    foo: bar\n- regex: ''\n  add:\n    bar: foo\n  discard: true", func() {
 				Expect(prometheusMetrics(port)).To(Equal("# HELP logs_total Total number of logs received\n# TYPE logs_total counter\nlogs_total{foo=\"bar\"} 1\n"))
 			})
 		})

@@ -65,6 +65,9 @@ patterns:
   add:
     pattern: secret
     message: secret key redacted # override message
+# discard spam
+- regex: 'todays weather is'
+  discard: true
 # mark all unmatched as unknown so we can alert on it
 - pattern: '' # catch all
   level: WARN

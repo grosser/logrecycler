@@ -19,6 +19,7 @@ import (
 type Pattern struct {
 	Regex       string
 	regexParsed *regexp.Regexp
+	Discard     bool `yaml:"discard"`
 	Add         map[string]string
 	Level       string
 	levelSet    bool
@@ -78,8 +79,7 @@ func main() {
 	scanner := bufio.NewScanner(os.Stdin)
 	for scanner.Scan() {
 		line := scanner.Text()
-		log := processLine(line, config, metric, stats)
-		fmt.Println(log.ToJson())
+		processLine(line, config, metric, stats)
 	}
 }
 
@@ -180,6 +180,10 @@ func prometheusMetricLabels(config *Config) []string {
 
 	// all possible captures and `add`
 	for _, pattern := range config.Patterns {
+		if pattern.Discard {
+			continue
+		}
+
 		labels = prometheusAddCaptures(pattern.regexParsed, labels)
 
 		if pattern.Add != nil {
@@ -234,7 +238,7 @@ func check(e error) {
 	}
 }
 
-func processLine(line string, config *Config, metric *prometheus.CounterVec, stats *statsd.Client) *OrderedMap {
+func processLine(line string, config *Config, metric *prometheus.CounterVec, stats *statsd.Client) {
 	// build log line ... sets the json key order too
 	log := NewOrderedMap()
 	if config.timestampKeySet {
@@ -255,6 +259,10 @@ func processLine(line string, config *Config, metric *prometheus.CounterVec, sta
 	// apply pattern rules if any
 	for _, pattern := range config.Patterns {
 		if match := pattern.regexParsed.FindStringSubmatch(log.values[config.MessageKey]); match != nil {
+			if pattern.Discard {
+				return
+			}
+
 			// set level
 			if pattern.levelSet {
 				log.Set(config.LevelKey, pattern.Level)
@@ -277,7 +285,7 @@ func processLine(line string, config *Config, metric *prometheus.CounterVec, sta
 	if config.statsd {
 		stats.Incr(config.StatsdMetric, statsdTags(&log.values, config), 1)
 	}
-	return log
+	fmt.Println(log.ToJson())
 }
 
 func storeCaptures(re *regexp.Regexp, log *OrderedMap, match []string) {
