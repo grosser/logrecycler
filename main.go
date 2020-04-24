@@ -3,7 +3,6 @@ package main
 import (
 	"bufio"
 	"context"
-	"flag"
 	"fmt"
 	"github.com/DataDog/datadog-go/statsd"
 	"github.com/prometheus/client_golang/prometheus"
@@ -85,13 +84,19 @@ func main() {
 }
 
 // parse flags ... so we fail on unknown flags and users can call `-help`
-// TODO: test it by overriding os.Exit
+// TODO: use a real flag library that supports not failing on --help ... not builtin flag
 func parseFlags() {
-	flag.Usage = func() {
-		// untested section ... TODO: trigger a noop main() and then call it directly
-		fmt.Fprintf(os.Stderr, "Usage:\npipe logs to logrecycler\nconfigure with logrecycler.yaml\n")
+	if len(os.Args) == 0 {
+		return
 	}
-	flag.Parse()
+	fmt.Fprintf(os.Stderr, "Usage:\npipe logs to logrecycler\nconfigure with logrecycler.yaml\n") // untested section
+	if len(os.Args) == 1 && (os.Args[0] == "-help" || os.Args[0] == "--help") {
+		// untested section
+		os.Exit(0)
+	} else {
+		// untested section
+		os.Exit(2)
+	}
 }
 
 // https://www.golangprograms.com/remove-duplicate-values-from-slice.html
