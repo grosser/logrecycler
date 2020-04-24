@@ -77,7 +77,7 @@ patterns:
 Pipe your logs to the recycler:
 
 ```
-<your-program-here> | logrecycler
+set -o pipefail; <your-program-here> | logrecycler
 ```
 
 # Development
