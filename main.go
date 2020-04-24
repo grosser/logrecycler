@@ -86,11 +86,11 @@ func main() {
 // parse flags ... so we fail on unknown flags and users can call `-help`
 // TODO: use a real flag library that supports not failing on --help ... not builtin flag
 func parseFlags() {
-	if len(os.Args) == 0 {
+	if len(os.Args) == 1 {
 		return
 	}
 	fmt.Fprintf(os.Stderr, "Usage:\npipe logs to logrecycler\nconfigure with logrecycler.yaml\n") // untested section
-	if len(os.Args) == 1 && (os.Args[0] == "-help" || os.Args[0] == "--help") {
+	if len(os.Args) == 2 && (os.Args[1] == "-help" || os.Args[1] == "--help") {
 		// untested section
 		os.Exit(0)
 	} else {

@@ -18,7 +18,7 @@ import (
 
 var _ = Describe("main", func() {
 	BeforeSuite(func() {
-		os.Args = []string{} // make flag parsing not crash
+		os.Args = []string{"logrecycler"} // make flag parsing not crash
 	})
 
 	It("works with empty config", func() {
