@@ -42,11 +42,13 @@ preprocess: '[^\]]+\] (?P<message>.*)' # reduce noise from message by replacing 
 # enable prometheus /metrics
 # when using: try to use the same `add` value and the same named regex captures in patterns below
 # to avoid running out of memory
-prometheus_port: 1234
+prometheus: 
+  port: 1234
 
 # enable statsd metric
-statsd_address: 0.0.0.0:8125
-statsd_metric: my_app.logs
+statsd:
+  address: 0.0.0.0:8125
+  metric: my_app.logs
 
 # patterns to match ... each log line only match the first matching pattern
 patterns:
@@ -99,9 +101,7 @@ Create a new release via github UI, workflow will automatically build a new bina
 ## TODO
 - support `--version` in released binary by messing with the workflow
 - `glog: full` to also capture `location` and `thread`
-- extract code into multiple files / modules
-- support json log parsing and rewrite
+- support json log parsing and rewriting
 - basic benchmark of memory/cpu overhead (without counting startup time)
 - examples for metric server / autoscaler / node problem detector
 - detect closed stdin and abort
-- makefile that runs everything locally

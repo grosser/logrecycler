@@ -133,49 +133,49 @@ var _ = Describe("main", func() {
 	Context("prometheus metrics", func() {
 		It("opens server at requested port", func() {
 			port := randomPort()
-			withConfig("---\nprometheus_port: "+port, func() {
+			withConfig("---\nprometheus:\n  port: "+port, func() {
 				Expect(prometheusMetrics(port)).To(Equal("# HELP logs_total Total number of logs received\n# TYPE logs_total counter\nlogs_total 1\n"))
 			})
 		})
 
 		It("reports level", func() {
 			port := randomPort()
-			withConfig("---\nprometheus_port: "+port+"\nlevel_key: lvl", func() {
+			withConfig("---\nprometheus:\n  port: "+port+"\nlevel_key: lvl", func() {
 				Expect(prometheusMetrics(port)).To(Equal("# HELP logs_total Total number of logs received\n# TYPE logs_total counter\nlogs_total{lvl=\"INFO\"} 1\n"))
 			})
 		})
 
 		It("reports added fields", func() {
 			port := randomPort()
-			withConfig("---\nprometheus_port: "+port+"\npatterns:\n- regex: hi\n  add:\n    foo: bar", func() {
+			withConfig("---\nprometheus:\n  port: "+port+"\npatterns:\n- regex: hi\n  add:\n    foo: bar", func() {
 				Expect(prometheusMetrics(port)).To(Equal("# HELP logs_total Total number of logs received\n# TYPE logs_total counter\nlogs_total{foo=\"bar\"} 1\n"))
 			})
 		})
 
 		It("ignores labels from discarded fields", func() {
 			port := randomPort()
-			withConfig("---\nprometheus_port: "+port+"\npatterns:\n- regex: hi\n  add:\n    foo: bar\n- regex: ''\n  add:\n    bar: foo\n  discard: true", func() {
+			withConfig("---\nprometheus:\n  port: "+port+"\npatterns:\n- regex: hi\n  add:\n    foo: bar\n- regex: ''\n  add:\n    bar: foo\n  discard: true", func() {
 				Expect(prometheusMetrics(port)).To(Equal("# HELP logs_total Total number of logs received\n# TYPE logs_total counter\nlogs_total{foo=\"bar\"} 1\n"))
 			})
 		})
 
 		It("reports captures", func() {
 			port := randomPort()
-			withConfig("---\nprometheus_port: "+port+"\npatterns:\n- regex: h(?P<name>i)", func() {
+			withConfig("---\nprometheus:\n  port: "+port+"\npatterns:\n- regex: h(?P<name>i)", func() {
 				Expect(prometheusMetrics(port)).To(Equal("# HELP logs_total Total number of logs received\n# TYPE logs_total counter\nlogs_total{name=\"i\"} 1\n"))
 			})
 		})
 
 		It("does not report missing fields", func() {
 			port := randomPort()
-			withConfig("---\nprometheus_port: "+port+"\npatterns:\n- regex: nope\n  add:\n    foo: bar", func() {
+			withConfig("---\nprometheus:\n  port: "+port+"\npatterns:\n- regex: nope\n  add:\n    foo: bar", func() {
 				Expect(prometheusMetrics(port)).To(Equal("# HELP logs_total Total number of logs received\n# TYPE logs_total counter\nlogs_total{foo=\"\"} 1\n"))
 			})
 		})
 
 		It("can report from preprocess", func() {
 			port := randomPort()
-			withConfig("---\nprometheus_port: "+port+"\npreprocess: h(?P<ii>i)", func() {
+			withConfig("---\nprometheus:\n  port: "+port+"\npreprocess: h(?P<ii>i)", func() {
 				Expect(prometheusMetrics(port)).To(Equal("# HELP logs_total Total number of logs received\n# TYPE logs_total counter\nlogs_total{ii=\"i\"} 1\n"))
 			})
 		})
@@ -184,7 +184,7 @@ var _ = Describe("main", func() {
 	Context("statsd metrics", func() {
 		It("reports", func() {
 			received := receiveUdp(func() {
-				withConfig("---\nstatsd_address: 0.0.0.0:8125\nstatsd_metric: foo.logs", func() {
+				withConfig("---\nstatsd:\n  address: 0.0.0.0:8125\n  metric: foo.logs", func() {
 					parse("hi foo")
 				})
 			})
@@ -193,7 +193,7 @@ var _ = Describe("main", func() {
 
 		It("reports additions", func() {
 			received := receiveUdp(func() {
-				withConfig("---\nstatsd_address: 0.0.0.0:8125\nstatsd_metric: foo.logs\npatterns:\n- regex: hi\n  add:\n    foo: bar", func() {
+				withConfig("---\nstatsd:\n  address: 0.0.0.0:8125\n  metric: foo.logs\npatterns:\n- regex: hi\n  add:\n    foo: bar", func() {
 					parse("hi foo")
 				})
 			})
@@ -202,7 +202,7 @@ var _ = Describe("main", func() {
 
 		It("reports preprocess", func() {
 			received := receiveUdp(func() {
-				withConfig("---\nstatsd_address: 0.0.0.0:8125\nstatsd_metric: foo.logs\npreprocess: hi (?P<name>.*)", func() {
+				withConfig("---\nstatsd:\n  address: 0.0.0.0:8125\n  metric: foo.logs\npreprocess: hi (?P<name>.*)", func() {
 					parse("hi foo")
 				})
 			})
@@ -211,7 +211,7 @@ var _ = Describe("main", func() {
 
 		It("does not report message override", func() {
 			received := receiveUdp(func() {
-				withConfig("---\nstatsd_address: 0.0.0.0:8125\nstatsd_metric: foo.logs\npatterns:\n- regex: hi\n  add:\n    message: bar", func() {
+				withConfig("---\nstatsd:\n  address: 0.0.0.0:8125\n  metric: foo.logs\npatterns:\n- regex: hi\n  add:\n    message: bar", func() {
 					parse("hi foo")
 				})
 			})
