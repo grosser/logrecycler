@@ -96,21 +96,21 @@ var _ = Describe("main", func() {
 	Context("Glog", func() {
 		It("parses simple", func() {
 			withConfig("---\nglog: simple", func() {
-				Expect(parse("I0203 02:03:04.12345 123 foo.go:123] hi")).
+				Expect(parse("I0203 02:03:04.12345    123 foo.go:123] hi")).
 					To(Equal(`{"message":"hi"}`))
 			})
 		})
 
 		It("parses level", func() {
 			withConfig("---\nglog: simple\nlevel_key: lvl", func() {
-				Expect(parse("I0203 02:03:04.12345 123 foo.go:123] hi")).
+				Expect(parse("I0203 02:03:04.12345    123 foo.go:123] hi")).
 					To(Equal(`{"lvl":"INFO","message":"hi"}`))
 			})
 		})
 
 		It("parses time", func() {
 			withConfig("---\nglog: simple\ntimestamp_key: ts", func() {
-				Expect(parse("I0203 02:03:04.12345 123 foo.go:123] hi")).
+				Expect(parse("I0203 02:03:04.12345     123 foo.go:123] hi")).
 					To(Equal(`{"ts":"2020-02-03T02:03:04Z","message":"hi"}`))
 			})
 		})
