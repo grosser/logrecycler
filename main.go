@@ -25,6 +25,7 @@ func main() {
 	}
 
 	// read logs from stdin
+	ensureStdinOpen()
 	scanner := bufio.NewScanner(os.Stdin)
 	for scanner.Scan() {
 		line := scanner.Text()
@@ -44,7 +45,7 @@ func parseFlags() {
 		os.Exit(0)
 	} else {
 		// untested section
-		os.Exit(2)
+		os.Exit(1)
 	}
 }
 

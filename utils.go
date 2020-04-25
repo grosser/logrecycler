@@ -49,8 +49,8 @@ func helpfulMustCompile(expr string, location string) *regexp.Regexp {
 	compiled, err := regexp.Compile(expr)
 	if err != nil {
 		// untested section
-		fmt.Fprintf(os.Stderr, "Error in regular expression from "+location+": "+err.Error())
-		os.Exit(2)
+		fmt.Fprintf(os.Stderr, "Error: regular expression from "+location+": "+err.Error())
+		os.Exit(1)
 	}
 	return compiled
 }
@@ -60,5 +60,15 @@ func addCaptureNames(re *regexp.Regexp, labels *[]string) {
 		if name != "" {
 			*labels = append(*labels, name)
 		}
+	}
+}
+
+// https://stackoverflow.com/questions/39993688/are-golang-slices-passed-by-value
+func ensureStdinOpen() {
+	stat, _ := os.Stdin.Stat()
+	if (stat.Mode() & os.ModeCharDevice) != 0 {
+		// untested section
+		fmt.Fprint(os.Stderr, "Error: pipe logs to logrecycler via stdin")
+		os.Exit(1)
 	}
 }
