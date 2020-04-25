@@ -13,6 +13,8 @@ import (
 	"net/http"
 	"os"
 	"regexp"
+	"strconv"
+	"strings"
 	"time"
 )
 
@@ -32,16 +34,27 @@ type Config struct {
 	StatsdAddress          string `yaml:"statsd_address"`
 	StatsdMetric           string `yaml:"statsd_metric"`
 	statsd                 bool
+	Glog                   string
+	glogSet                bool
 	TimestampKey           string `yaml:"timestamp_key"`
 	timestampKeySet        bool
 	LevelKey               string `yaml:"level_key"`
 	levelKeySet            bool
 	MessageKey             string `yaml:"message_key"`
 	Patterns               []Pattern
-	Preprocess             string `yaml:"preprocess"`
+	Preprocess             string
 	preprocessSet          bool
 	preprocessParsed       *regexp.Regexp
 }
+
+var glogRegex = regexp.MustCompile("^([IWEF])(\\d{2})(\\d{2}) (\\d{2}):(\\d{2}):(\\d{2})\\.\\d+ \\d+ \\S+:\\d+] ")
+var glogLevels = map[string]string{
+	"I": "INFO",
+	"W": "WARN",
+	"E": "ERROR",
+	"F": "FATAL",
+}
+var timeFormat = time.RFC3339
 
 func main() {
 	parseFlags()
@@ -153,15 +166,20 @@ func readConfig() *Config {
 	}
 	config.timestampKeySet = (config.TimestampKey != "")
 	config.levelKeySet = (config.LevelKey != "")
-	config.prometheus = (config.PrometheusPort != "")
-	config.statsd = (config.StatsdAddress != "")
+	config.glogSet = (config.Glog != "")
+
+	// preprocess
 	config.preprocessSet = (config.Preprocess != "")
 	if config.preprocessSet {
 		config.preprocessParsed = regexp.MustCompile(config.Preprocess)
 	}
 
 	// store all possible labels
+	config.prometheus = (config.PrometheusPort != "")
 	config.prometheusMetricLabels = prometheusMetricLabels(&config)
+
+	// statsd
+	config.statsd = (config.StatsdAddress != "")
 
 	return &config
 }
@@ -238,11 +256,12 @@ func check(e error) {
 	}
 }
 
+// everything in here needs to be extra efficient
 func processLine(line string, config *Config, metric *prometheus.CounterVec, stats *statsd.Client) {
 	// build log line ... sets the json key order too
 	log := NewOrderedMap()
 	if config.timestampKeySet {
-		log.Set(config.TimestampKey, time.Now().Format(time.RFC3339))
+		log.Set(config.TimestampKey, time.Now().Format(timeFormat))
 	}
 	if config.levelKeySet {
 		log.Set(config.LevelKey, "INFO")
@@ -251,8 +270,33 @@ func processLine(line string, config *Config, metric *prometheus.CounterVec, sta
 
 	// preprocess the log line for general purpose cleanup
 	if config.preprocessSet {
-		if match := config.preprocessParsed.FindStringSubmatch(line); match != nil {
+		if match := config.preprocessParsed.FindStringSubmatch(log.values[config.MessageKey]); match != nil {
 			storeCaptures(config.preprocessParsed, log, match)
+		}
+	}
+
+	// parse out glog
+	if config.glogSet {
+		if match := glogRegex.FindStringSubmatch(log.values[config.MessageKey]); match != nil {
+			// remove glog from message
+			log.values[config.MessageKey] = strings.TrimLeft(log.values[config.MessageKey], match[0])
+
+			// set level
+			if config.levelKeySet {
+				log.values[config.LevelKey] = glogLevels[match[1]]
+			}
+
+			// parse time
+			if config.timestampKeySet {
+				year := time.Now().Year()
+				month, _ := strconv.Atoi(match[2])
+				day, _ := strconv.Atoi(match[3])
+				hour, _ := strconv.Atoi(match[4])
+				min, _ := strconv.Atoi(match[5])
+				sec, _ := strconv.Atoi(match[6])
+				date := time.Date(year, time.Month(month), day, hour, min, sec, 0, time.UTC)
+				log.values[config.TimestampKey] = date.Format(timeFormat)
+			}
 		}
 	}
 
@@ -265,7 +309,7 @@ func processLine(line string, config *Config, metric *prometheus.CounterVec, sta
 
 			// set level
 			if pattern.levelSet {
-				log.Set(config.LevelKey, pattern.Level)
+				log.values[config.LevelKey] = pattern.Level
 			}
 
 			// log named captures

@@ -36,6 +36,7 @@ Configure a `logrecycler.yaml` in your project root:
 timestamp_key: ts # what to call the timestamp in the logs (for example @timestamp, ts, leave empty for no timestamp)
 level_key: level # what to call the level in the logs (for example level/lvl/severity, leave empty for no level)
 message_key: msg # what to call the message in the logs (leave empty for 'message')
+glog: simple # convert glog style prefix ([IWEF]mmdd hh:mm:ss.uuuuuu threadid file:line] message) into timestamp/level/message
 preprocess: '[^\]]+\] (?P<message>.*)' # reduce noise from message by replacing it with captured (for example remove, leave empty for none)
 
 # enable prometheus /metrics
@@ -88,3 +89,13 @@ set -o pipefail; <your-program-here> | logrecycler
 ## Release
 
 Create a new release via github UI, workflow will automatically build a new binary.
+
+## TODO
+- `glog: full` to also capture `location` and `thread`
+- test that regex errors in config are readable
+- test clean exit from `--help` / dirty exit from unknown arguments
+- fail when passing unknown config keys
+- extract code into multiple files / modules
+- support json parsing and rewrite
+- basic benchmark of memory/cpu overhead
+- examples for metric server / autoscaler / node problem detector
