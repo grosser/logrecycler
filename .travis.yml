@@ -3,10 +3,14 @@ sudo: false
 branches:
   only: [master]
 go: "1.14"
-script: # executes all but fails if any failed
+
+# executes all but fails if any failed
+# keep in sync with .travis.yml
+script:
 - go build .
 - go get github.com/grosser/go-testcov
 - go-testcov . -covermode atomic
+- ruby test.rb -v
 - go mod tidy && git diff --exit-code
 - go fmt . && git diff --exit-code
 

@@ -86,16 +86,22 @@ set -o pipefail; <your-program-here> | logrecycler
 
 # Development
 
+## Test
+
+- `go get github.com/grosser/go-testcov`
+- install any version of ruby (used for integration tests)
+- `make test`
+
 ## Release
 
 Create a new release via github UI, workflow will automatically build a new binary.
 
 ## TODO
+- support `--version` in released binary by messing with the workflow
 - `glog: full` to also capture `location` and `thread`
-- test that regex errors in config are readable
-- test clean exit from `--help` / dirty exit from unknown arguments
-- fail when passing unknown config keys
 - extract code into multiple files / modules
-- support json parsing and rewrite
-- basic benchmark of memory/cpu overhead
+- support json log parsing and rewrite
+- basic benchmark of memory/cpu overhead (without counting startup time)
 - examples for metric server / autoscaler / node problem detector
+- detect closed stdin and abort
+- makefile that runs everything locally

@@ -151,7 +151,7 @@ func readConfig() *Config {
 	content, err := ioutil.ReadFile("logrecycler.yaml")
 	check(err)
 
-	err = yaml.Unmarshal(content, &config)
+	err = yaml.UnmarshalStrict(content, &config)
 	check(err)
 
 	// we always need a message key
@@ -161,7 +161,8 @@ func readConfig() *Config {
 
 	// optimizations to avoid doing multiple times
 	for i := range config.Patterns {
-		config.Patterns[i].regexParsed = regexp.MustCompile(config.Patterns[i].Regex)
+		config.Patterns[i].regexParsed =
+			compileOrExit(config.Patterns[i].Regex, "patterns["+strconv.Itoa(i)+"].regex")
 		config.Patterns[i].levelSet = (config.Patterns[i].Level != "")
 	}
 	config.timestampKeySet = (config.TimestampKey != "")
@@ -171,7 +172,7 @@ func readConfig() *Config {
 	// preprocess
 	config.preprocessSet = (config.Preprocess != "")
 	if config.preprocessSet {
-		config.preprocessParsed = regexp.MustCompile(config.Preprocess)
+		config.preprocessParsed = compileOrExit(config.Preprocess, "preprocess")
 	}
 
 	// store all possible labels
@@ -338,4 +339,14 @@ func storeCaptures(re *regexp.Regexp, log *OrderedMap, match []string) {
 			log.Set(name, match[i])
 		}
 	}
+}
+
+func compileOrExit(expr string, location string) *regexp.Regexp {
+	compiled, err := regexp.Compile(expr)
+	if err != nil {
+		// untested section
+		fmt.Fprintf(os.Stderr, "Error in regular expression from "+location+": "+err.Error())
+		os.Exit(2)
+	}
+	return compiled
 }
