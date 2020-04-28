@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"os"
 	"strconv"
-	"strings"
 	"time"
 )
 
@@ -108,7 +107,7 @@ func processLine(line string, config *Config) {
 
 func captureGlog(config *Config, match []string, log *OrderedMap) {
 	// remove glog from message
-	log.values[config.MessageKey] = strings.TrimLeft(log.values[config.MessageKey], match[0])
+	log.values[config.MessageKey] = log.values[config.MessageKey][len(match[0]):]
 
 	// set level
 	if config.levelKeySet {

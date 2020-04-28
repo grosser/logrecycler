@@ -33,7 +33,7 @@ type Config struct {
 	preprocessParsed *regexp.Regexp
 }
 
-var glogRegex = regexp.MustCompile("^([IWEF])(\\d{2})(\\d{2}) (\\d{2}):(\\d{2}):(\\d{2})\\.\\d+ +\\d+ \\S+:\\d+] ")
+var glogRegex = regexp.MustCompile(`^([IWEF])(\d{2})(\d{2}) (\d{2}):(\d{2}):(\d{2})\.\d+ +\d+ \S+:\d+] `)
 var glogLevels = map[string]string{
 	"I": "INFO",
 	"W": "WARN",
