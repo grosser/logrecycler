@@ -31,6 +31,10 @@ describe "logrecycler" do
     call("--help").must_include "Usage"
   end
 
+  it "can show version" do
+    call("--version").must_equal "master\n"
+  end
+
   it "fails with unknown arguments" do
     call("--wut", expected_exit: 1).must_include "Usage"
   end

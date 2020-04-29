@@ -8,6 +8,8 @@ import (
 	"time"
 )
 
+const Version = "master" // dynamically set by release action
+
 func main() {
 	parseFlags()
 
@@ -38,6 +40,14 @@ func parseFlags() {
 	if len(os.Args) == 1 {
 		return
 	}
+
+	// show version
+	if len(os.Args) == 2 && os.Args[1] == "--version" { // untested section
+		fmt.Println(Version)
+		os.Exit(0)
+	}
+
+	// either bad or usage requested
 	fmt.Fprintf(os.Stderr, "Usage:\npipe logs to logrecycler\nconfigure with logrecycler.yaml\n") // untested section
 	if len(os.Args) == 2 && (os.Args[1] == "-help" || os.Args[1] == "--help") {
 		// untested section
