@@ -64,11 +64,7 @@ func addCaptureNames(re *regexp.Regexp, labels *[]string) {
 }
 
 // https://stackoverflow.com/questions/39993688/are-golang-slices-passed-by-value
-func ensureStdinOpen() {
+func pipingToStding() bool {
 	stat, _ := os.Stdin.Stat()
-	if (stat.Mode() & os.ModeCharDevice) != 0 {
-		// untested section
-		fmt.Fprint(os.Stderr, "Error: pipe logs to logrecycler via stdin")
-		os.Exit(1)
-	}
+	return (stat.Mode() & os.ModeCharDevice) == 0
 }

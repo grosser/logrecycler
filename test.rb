@@ -28,7 +28,7 @@ describe "logrecycler" do
   end
 
   it "can show help" do
-    call("--help").must_include "Usage"
+    call("--help").must_include "logrecycler"
   end
 
   it "can show version" do
@@ -36,7 +36,7 @@ describe "logrecycler" do
   end
 
   it "fails with unknown arguments" do
-    call("--wut", expected_exit: 1).must_include "Usage"
+    call("--wut", expected_exit: 1).must_include "logrecycler"
   end
 
   it "fails nicely with no file" do

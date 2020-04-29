@@ -26,7 +26,10 @@ func main() {
 	}
 
 	// read logs from stdin
-	ensureStdinOpen()
+	if !pipingToStding() {
+		// untested section
+		showUsage(1)
+	}
 	scanner := bufio.NewScanner(os.Stdin)
 	for scanner.Scan() {
 		line := scanner.Text()
@@ -47,15 +50,25 @@ func parseFlags() {
 		os.Exit(0)
 	}
 
-	// either bad or usage requested
-	fmt.Fprintf(os.Stderr, "Usage:\npipe logs to logrecycler\nconfigure with logrecycler.yaml\n") // untested section
-	if len(os.Args) == 2 && (os.Args[1] == "-help" || os.Args[1] == "--help") {
-		// untested section
-		os.Exit(0)
-	} else {
-		// untested section
-		os.Exit(1)
+	if len(os.Args) == 2 && (os.Args[1] == "-help" || os.Args[1] == "--help") { // untested section
+		showUsage(0)
+	} else { // untested section
+		showUsage(1)
 	}
+}
+
+func showUsage(exitcode int) {
+	// untested section
+	fmt.Fprintf(os.Stderr,
+		"pipe logs to logrecycler to convert them into json logs with custom tags\n"+
+		"configure with logrecycler.yaml\n" +
+		"for more info see https://github.com/grosser/logrecycler\n" +
+		"\n" +
+		"Options:\n" +
+		"	-h, --help\n" +
+		"	--version\n",
+	)
+	os.Exit(exitcode)
 }
 
 // everything in here needs to be extra efficient
