@@ -9,6 +9,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@master
+    - name: Version
+      run: sed -i s/"master"/"${{ github.ref }}"/ main.go
     - name: compile and release
       uses: wangyoucao577/go-release-action@v1.4
       with:
@@ -20,6 +22,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@master
+    - name: Version
+      run: sed -i s/"master"/"${{ github.ref }}"/ main.go
     - name: compile and release
       uses: wangyoucao577/go-release-action@v1.4
       with:

@@ -99,7 +99,6 @@ set -o pipefail; <your-program-here> | logrecycler
 Create a new release via github UI, workflow will automatically build a new binary.
 
 ## TODO
-- support `--version` in released binary by messing with the workflow
 - `glog: full` to also capture `location` and `thread`
 - support json log parsing and rewriting
 - basic benchmark of memory/cpu overhead (without counting startup time)
