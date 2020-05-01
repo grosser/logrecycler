@@ -15,6 +15,7 @@ type Pattern struct {
 	Add         map[string]string
 	Level       string
 	levelSet    bool
+	MetricLabels *[]string `yaml:"metric_labels"`
 }
 
 type Config struct {
@@ -98,10 +99,14 @@ func (c *Config) possibleLabels() []string {
 			continue
 		}
 
-		addCaptureNames(pattern.regexParsed, &labels)
+		if pattern.MetricLabels == nil {
+			addCaptureNames(pattern.regexParsed, &labels)
 
-		if pattern.Add != nil {
-			labels = append(labels, keys(pattern.Add)...)
+			if pattern.Add != nil {
+				labels = append(labels, keys(pattern.Add)...)
+			}
+		} else {
+			labels = append(labels, *pattern.MetricLabels...)
 		}
 	}
 

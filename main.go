@@ -99,6 +99,7 @@ func processLine(line string, config *Config) {
 	}
 
 	// apply pattern rules if any
+	var metricLabels *[]string
 	for _, pattern := range config.Patterns {
 		if match := pattern.regexParsed.FindStringSubmatch(log.values[config.MessageKey]); match != nil {
 			if pattern.Discard {
@@ -113,6 +114,8 @@ func processLine(line string, config *Config) {
 			log.StoreNamedCaptures(pattern.regexParsed, &match)
 			log.Merge(pattern.Add)
 
+			metricLabels = pattern.MetricLabels
+
 			break // a line can only match one pattern
 		}
 	}
@@ -120,7 +123,9 @@ func processLine(line string, config *Config) {
 	fmt.Println(log.ToJson())
 
 	delete(log.values, config.MessageKey) // nobody should use message as label
-
+	if metricLabels != nil {
+		slice(log.values, *metricLabels)
+	}
 	if config.Prometheus != nil {
 		config.Prometheus.Inc(log.values)
 	}

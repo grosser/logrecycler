@@ -62,6 +62,7 @@ patterns:
   level: ERROR
   add:
     pattern: connection-error
+  metric_labels: ["level", "pattern", "port"] # do not set the "host" when not reporting on it
 # override message if it includes secrets
 - regex: 'secret key is'
   level: INFO
@@ -103,3 +104,4 @@ Create a new release via github UI, workflow will automatically build a new bina
 - support json log parsing and rewriting
 - basic benchmark of memory/cpu overhead (without counting startup time)
 - examples for metric server / autoscaler / node problem detector
+- convert all to kubernetes case
