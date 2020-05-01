@@ -8,6 +8,7 @@ statsd:
 patterns:
 - regex: '^Rule: &{.*Condition:(?P<condition>\S+) .* Duration: (?P<duration>\d+\.\d+s)'
   add:
+    message: Rule finished
     pattern: rule
   metricLabels: ["level", "pattern", "condition"] # not "duration"
 - regex: '^Add check result {Rule:.* ExitStatus:(?P<exit_code>\d) Message:(.+)} for rule &{.*Condition:(?P<condition>\S+)'
@@ -18,7 +19,6 @@ patterns:
 - regex: '^(?P<message>Killed process \d+ .*) Conditions:'
   level: WARN
   add:
-    message: Rule result
     pattern: kernel-monitor-temporary
 # all info in here is duplicated by `rule` and `result`
 - regex: '^(Receive new plugin result|Start to run custom plugins|New status generated|Finish running custom plugins)'
