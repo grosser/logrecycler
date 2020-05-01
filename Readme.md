@@ -62,7 +62,7 @@ patterns:
   level: ERROR
   add:
     pattern: connection-error
-  metricLabels: ["level", "pattern", "port"] # do not set the "host" when not reporting on it
+  ignoreMetricLabels: ["host"] # do not use "host" as metric
 # override message if it includes secrets
 - regex: 'secret key is'
   level: INFO

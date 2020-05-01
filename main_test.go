@@ -159,9 +159,9 @@ var _ = Describe("main", func() {
 			})
 		})
 
-		It("ignores labels when not in metricLabels", func() {
+		It("ignores labels when not in ignoreMetricLabels", func() {
 			port := randomPort()
-			withConfig("---\nprometheus:\n  port: "+port+"\npatterns:\n- regex: hi\n  add:\n    foo: bar\n    bar: baz\n  metricLabels: [\"foo\"]", func() {
+			withConfig("---\nprometheus:\n  port: "+port+"\npatterns:\n- regex: hi\n  add:\n    foo: bar\n    bar: baz\n  ignoreMetricLabels: [\"bar\"]", func() {
 				Expect(prometheusMetrics(port)).To(Equal("# HELP logs_total Total number of logs received\n# TYPE logs_total counter\nlogs_total{foo=\"bar\"} 1\n"))
 			})
 		})

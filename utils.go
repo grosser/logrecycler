@@ -68,21 +68,3 @@ func pipingToStding() bool {
 	stat, _ := os.Stdin.Stat()
 	return (stat.Mode() & os.ModeCharDevice) == 0
 }
-
-// https://ispycode.com/GO/Collections/Arrays/Check-if-item-is-in-array
-func contains(arr []string, str string) bool {
-	for _, a := range arr {
-		if a == str {
-			return true
-		}
-	}
-	return false
-}
-
-func slice(m map[string]string, keys []string) {
-	for k, _ := range m {
-		if !contains(keys, k) {
-			delete(m, k)
-		}
-	}
-}

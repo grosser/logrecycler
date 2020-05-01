@@ -9,13 +9,13 @@ import (
 )
 
 type Pattern struct {
-	Regex        string
-	regexParsed  *regexp.Regexp
-	Discard      bool
-	Add          map[string]string
-	Level        string
-	levelSet     bool
-	MetricLabels *[]string `yaml:"metricLabels"`
+	Regex              string
+	regexParsed        *regexp.Regexp
+	Discard            bool
+	Add                map[string]string
+	Level              string
+	levelSet           bool
+	IgnoreMetricLabels []string `yaml:"ignoreMetricLabels"`
 }
 
 type Config struct {
@@ -99,15 +99,18 @@ func (c *Config) possibleLabels() []string {
 			continue
 		}
 
-		if pattern.MetricLabels == nil {
-			addCaptureNames(pattern.regexParsed, &labels)
+		patternLabels := []string{}
+		addCaptureNames(pattern.regexParsed, &patternLabels)
 
-			if pattern.Add != nil {
-				labels = append(labels, keys(pattern.Add)...)
-			}
-		} else {
-			labels = append(labels, *pattern.MetricLabels...)
+		if pattern.Add != nil {
+			patternLabels = append(patternLabels, keys(pattern.Add)...)
 		}
+
+		for _, l := range pattern.IgnoreMetricLabels {
+			patternLabels = removeElement(patternLabels, l)
+		}
+
+		labels = append(labels, patternLabels...)
 	}
 
 	labels = unique(labels)
