@@ -103,4 +103,4 @@ Create a new release via github UI, workflow will automatically build a new bina
 - `glog: full` to also capture `location` and `thread`
 - support json log parsing and rewriting
 - basic benchmark of memory/cpu overhead (without counting startup time)
-- examples for metric server / autoscaler / node problem detector
+- more examples

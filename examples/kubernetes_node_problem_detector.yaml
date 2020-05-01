@@ -1,0 +1,31 @@
+levelKey: level
+glog: simple
+
+statsd:
+  address: 169.254.1.1:8125
+  metric: node_problem_detector.log
+
+patterns:
+- regex: '^Rule: &{.*Condition:(?P<condition>\S+) .* Duration: (?P<duration>\d+\.\d+s)'
+  add:
+    pattern: rule
+  metricLabels: ["level", "pattern", "condition"] # not "duration"
+- regex: '^Add check result {Rule:.* ExitStatus:(?P<exit_code>\d) Message:(.+)} for rule &{.*Condition:(?P<condition>\S+)'
+  add:
+    pattern: result
+# something got sigkilled on the node ... not good but not critical
+- regex: '^(?P<message>Killed process \d+ .*) Conditions:'
+  level: WARN
+  add:
+    pattern: kernel-monitor-temporary
+# all info in here is duplicated by `rule` and `result`
+- regex: '^(Receive new plugin result|Start to run custom plugins|New status generated|Finish running custom plugins)'
+  discard: true
+# thin out unknown so our monitors do not need to ignore restarts
+- regex: '^(\++ |Starting Node Problem Detector|Finish parsing|Start log monitor|Use log watcher|Waiting for kube-apiserver|Problem detector started|K8s exporter started|Prometheus exporter started|Start custom plugin monitor|Initialize condition generated|Start watching)'
+  add:
+    pattern: startup
+# rest is unknown and we alert if there are too many
+- regex: ""
+  add:
+    pattern: unknown

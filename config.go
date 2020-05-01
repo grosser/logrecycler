@@ -9,12 +9,12 @@ import (
 )
 
 type Pattern struct {
-	Regex       string
-	regexParsed *regexp.Regexp
-	Discard     bool
-	Add         map[string]string
-	Level       string
-	levelSet    bool
+	Regex        string
+	regexParsed  *regexp.Regexp
+	Discard      bool
+	Add          map[string]string
+	Level        string
+	levelSet     bool
 	MetricLabels *[]string `yaml:"metricLabels"`
 }
 
