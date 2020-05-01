@@ -15,7 +15,7 @@ type Pattern struct {
 	Add         map[string]string
 	Level       string
 	levelSet    bool
-	MetricLabels *[]string `yaml:"metric_labels"`
+	MetricLabels *[]string `yaml:"metricLabels"`
 }
 
 type Config struct {
@@ -23,11 +23,11 @@ type Config struct {
 	Statsd           *Statsd
 	Glog             string
 	glogSet          bool
-	TimestampKey     string `yaml:"timestamp_key"`
+	TimestampKey     string `yaml:"timestampKey"`
 	timestampKeySet  bool
-	LevelKey         string `yaml:"level_key"`
+	LevelKey         string `yaml:"levelKey"`
 	levelKeySet      bool
-	MessageKey       string `yaml:"message_key"`
+	MessageKey       string `yaml:"messageKey"`
 	Patterns         []Pattern
 	Preprocess       string
 	preprocessSet    bool

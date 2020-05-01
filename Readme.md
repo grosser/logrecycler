@@ -33,9 +33,9 @@ Configure a `logrecycler.yaml` in your project root:
 
 ```yaml
 # optional settings
-timestamp_key: ts # what to call the timestamp in the logs (for example @timestamp, ts, leave empty for no timestamp)
-level_key: level # what to call the level in the logs (for example level/lvl/severity, leave empty for no level)
-message_key: msg # what to call the message in the logs (leave empty for 'message')
+timestampKey: ts # what to call the timestamp in the logs (for example @timestamp, ts, leave empty for no timestamp)
+levelKey: level # what to call the level in the logs (for example level/lvl/severity, leave empty for no level)
+messageKey: msg # what to call the message in the logs (leave empty for 'message')
 glog: simple # convert glog style prefix ([IWEF]mmdd hh:mm:ss.uuuuuu threadid file:line] message) into timestamp/level/message
 preprocess: '[^\]]+\] (?P<message>.*)' # reduce noise from message by replacing it with captured (for example remove, leave empty for none)
 
@@ -62,7 +62,7 @@ patterns:
   level: ERROR
   add:
     pattern: connection-error
-  metric_labels: ["level", "pattern", "port"] # do not set the "host" when not reporting on it
+  metricLabels: ["level", "pattern", "port"] # do not set the "host" when not reporting on it
 # override message if it includes secrets
 - regex: 'secret key is'
   level: INFO
@@ -104,4 +104,3 @@ Create a new release via github UI, workflow will automatically build a new bina
 - support json log parsing and rewriting
 - basic benchmark of memory/cpu overhead (without counting startup time)
 - examples for metric server / autoscaler / node problem detector
-- convert all to kubernetes case

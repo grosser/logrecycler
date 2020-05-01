@@ -27,20 +27,20 @@ var _ = Describe("main", func() {
 		})
 	})
 
-	It("can configure message_key", func() {
-		withConfig("---\nmessage_key: msg", func() {
+	It("can configure messageKey", func() {
+		withConfig("---\nmessageKey: msg", func() {
 			Expect(parse("hi")).To(Equal(`{"msg":"hi"}`))
 		})
 	})
 
-	It("can configure timestamp_key", func() {
-		withConfig("---\ntimestamp_key: ts", func() {
+	It("can configure timestampKey", func() {
+		withConfig("---\ntimestampKey: ts", func() {
 			Expect(parse("hi")).To(ContainSubstring(`{"ts":"`))
 		})
 	})
 
 	It("can set level", func() {
-		withConfig("---\nlevel_key: severity", func() {
+		withConfig("---\nlevelKey: severity", func() {
 			Expect(parse("hi")).To(Equal(`{"severity":"INFO","message":"hi"}`))
 		})
 	})
@@ -58,7 +58,7 @@ var _ = Describe("main", func() {
 	})
 
 	It("can change level from patterns", func() {
-		withConfig("---\nlevel_key: level\npatterns:\n- regex: hi\n  level: WARN", func() {
+		withConfig("---\nlevelKey: level\npatterns:\n- regex: hi\n  level: WARN", func() {
 			Expect(parse("hi")).To(Equal(`{"level":"WARN","message":"hi"}`))
 		})
 	})
@@ -102,14 +102,14 @@ var _ = Describe("main", func() {
 		})
 
 		It("parses level", func() {
-			withConfig("---\nglog: simple\nlevel_key: lvl", func() {
+			withConfig("---\nglog: simple\nlevelKey: lvl", func() {
 				Expect(parse("I0203 02:03:04.12345    123 foo.go:123] hi")).
 					To(Equal(`{"lvl":"INFO","message":"hi"}`))
 			})
 		})
 
 		It("parses time", func() {
-			withConfig("---\nglog: simple\ntimestamp_key: ts", func() {
+			withConfig("---\nglog: simple\ntimestampKey: ts", func() {
 				Expect(parse("I0203 02:03:04.12345     123 foo.go:123] hi")).
 					To(Equal(`{"ts":"2020-02-03T02:03:04Z","message":"hi"}`))
 			})
@@ -140,7 +140,7 @@ var _ = Describe("main", func() {
 
 		It("reports level", func() {
 			port := randomPort()
-			withConfig("---\nprometheus:\n  port: "+port+"\nlevel_key: lvl", func() {
+			withConfig("---\nprometheus:\n  port: "+port+"\nlevelKey: lvl", func() {
 				Expect(prometheusMetrics(port)).To(Equal("# HELP logs_total Total number of logs received\n# TYPE logs_total counter\nlogs_total{lvl=\"INFO\"} 1\n"))
 			})
 		})
@@ -159,9 +159,9 @@ var _ = Describe("main", func() {
 			})
 		})
 
-		It("ignores labels when not in metric_labels", func() {
+		It("ignores labels when not in metricLabels", func() {
 			port := randomPort()
-			withConfig("---\nprometheus:\n  port: "+port+"\npatterns:\n- regex: hi\n  add:\n    foo: bar\n    bar: baz\n  metric_labels: [\"foo\"]", func() {
+			withConfig("---\nprometheus:\n  port: "+port+"\npatterns:\n- regex: hi\n  add:\n    foo: bar\n    bar: baz\n  metricLabels: [\"foo\"]", func() {
 				Expect(prometheusMetrics(port)).To(Equal("# HELP logs_total Total number of logs received\n# TYPE logs_total counter\nlogs_total{foo=\"bar\"} 1\n"))
 			})
 		})
