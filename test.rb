@@ -36,7 +36,7 @@ describe "logrecycler" do
   end
 
   it "fails with unknown arguments" do
-    call("--wut", expected_exit: 1).must_include "logrecycler"
+    call("--wut", expected_exit: 2).must_include "logrecycler"
   end
 
   it "fails nicely with no file" do
@@ -66,7 +66,7 @@ describe "logrecycler" do
 
   it "fails not passing stdin" do
     with_config "" do
-      call("", expected_exit: 1).must_include "pipe logs"
+      call("", expected_exit: 2).must_include "pipe logs"
     end
   end
 end

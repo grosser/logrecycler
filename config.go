@@ -43,14 +43,17 @@ var glogLevels = map[string]string{
 }
 var timeFormat = time.RFC3339
 
-func NewConfig(path string) *Config {
+func NewConfig(path string) (*Config, error) {
 	// read config
 	var config Config
 	content, err := ioutil.ReadFile(path)
-	check(err)
+	if err != nil { // untested section
+		return nil, err
+	}
 
-	err = yaml.UnmarshalStrict(content, &config)
-	check(err)
+	if err = yaml.UnmarshalStrict(content, &config); err != nil { // untested section
+		return nil, err
+	}
 
 	// we always need a message key
 	if config.MessageKey == "" {
@@ -78,7 +81,7 @@ func NewConfig(path string) *Config {
 		config.Prometheus.Labels = config.possibleLabels()
 	}
 
-	return &config
+	return &config, nil
 }
 
 // all labels that could ever be used by the given config

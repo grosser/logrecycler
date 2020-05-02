@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"flag"
 	"fmt"
 	"os"
 	"strconv"
@@ -13,7 +14,12 @@ const Version = "master" // dynamically set by release action
 func main() {
 	parseFlags()
 
-	config := NewConfig("logrecycler.yaml")
+	config, err := NewConfig("logrecycler.yaml")
+	if err != nil {
+		// untested section
+		fmt.Fprintln(os.Stderr, "Error: %w", err)
+		os.Exit(2)
+	}
 
 	if config.Prometheus != nil {
 		config.Prometheus.Start()
@@ -28,7 +34,8 @@ func main() {
 	// read logs from stdin
 	if !pipingToStding() {
 		// untested section
-		showUsage(1)
+		flag.Usage()
+		os.Exit(2)
 	}
 	scanner := bufio.NewScanner(os.Stdin)
 	for scanner.Scan() {
@@ -38,38 +45,40 @@ func main() {
 }
 
 // parse flags ... so we fail on unknown flags and users can call `-help`
-// TODO: use a real flag library that supports not failing on --help ... not builtin flag
 func parseFlags() {
-	if len(os.Args) == 1 {
-		return
+	if flag.Parsed() {
+		return // we are in test and this already ran
 	}
 
-	// show version
-	if len(os.Args) == 2 && os.Args[1] == "--version" { // untested section
+	flag.Usage = func() { // untested section
+		fmt.Fprintf(
+			os.Stderr,
+			"logrecycler "+Version+"\n"+
+				"pipe logs to logrecycler to convert them into json logs with custom tags\n"+
+				"configure with logrecycler.yaml\n"+
+				"for more info see https://github.com/grosser/logrecycler\n",
+		)
+		flag.PrintDefaults()
+	}
+	version := flag.Bool("version", false, "Show version") // untested section
+	help := flag.Bool("help", false, "Show this")
+
+	flag.Parse()
+
+	if *version { // untested section
 		fmt.Println(Version)
 		os.Exit(0)
 	}
 
-	if len(os.Args) == 2 && (os.Args[1] == "-h" || os.Args[1] == "-help" || os.Args[1] == "--help") { // untested section
-		showUsage(0)
-	} else { // untested section
-		showUsage(1)
+	if *help { // untested section
+		flag.Usage()
+		os.Exit(0)
 	}
-}
 
-func showUsage(exitcode int) {
-	// untested section
-	fmt.Fprintf(
-		os.Stderr,
-		"pipe logs to logrecycler to convert them into json logs with custom tags\n"+
-			"configure with logrecycler.yaml\n"+
-			"for more info see https://github.com/grosser/logrecycler\n"+
-			"\n"+
-			"Options:\n"+
-			"	-h, --help\n"+
-			"	--version\n",
-	)
-	os.Exit(exitcode)
+	if len(flag.Args()) != 0 { // untested section
+		flag.Usage()
+		os.Exit(2)
+	}
 }
 
 // everything in here needs to be extra efficient
