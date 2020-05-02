@@ -12,12 +12,12 @@ import (
 const Version = "master" // dynamically set by release action
 
 func main() {
-	parseFlags()
+	set := parseFlags()
 
 	config, err := NewConfig("logrecycler.yaml")
 	if err != nil {
 		// untested section
-		fmt.Fprintln(os.Stderr, "Error: %w", err)
+		fmt.Fprintf(os.Stderr, "Error: %v\n", err.Error())
 		os.Exit(2)
 	}
 
@@ -34,7 +34,7 @@ func main() {
 	// read logs from stdin
 	if !pipingToStding() {
 		// untested section
-		flag.Usage()
+		set.Usage()
 		os.Exit(2)
 	}
 	scanner := bufio.NewScanner(os.Stdin)
@@ -45,13 +45,11 @@ func main() {
 }
 
 // parse flags ... so we fail on unknown flags and users can call `-help`
-// TODO: don't play with global flags but return a flag object + use errors, then test this method
-func parseFlags() {
-	if flag.Parsed() {
-		return // we are in test and this already ran
-	}
+// TODO: return errors so we can test this method
+func parseFlags() *flag.FlagSet {
+	set := flag.NewFlagSet(os.Args[0], flag.ContinueOnError)
 
-	flag.Usage = func() { // untested section
+	set.Usage = func() { // untested section
 		fmt.Fprintf(
 			os.Stderr,
 			"logrecycler "+Version+"\n"+
@@ -59,12 +57,15 @@ func parseFlags() {
 				"configure with logrecycler.yaml\n"+
 				"for more info see https://github.com/grosser/logrecycler\n",
 		)
-		flag.PrintDefaults()
+		set.PrintDefaults()
 	}
-	version := flag.Bool("version", false, "Show version") // untested section
-	help := flag.Bool("help", false, "Show this")
+	version := set.Bool("version", false, "Show version")
+	help := set.Bool("help", false, "Show this")
 
-	flag.Parse()
+	if err := set.Parse(os.Args[1:]); err != nil { // untested section
+		set.Usage()
+		os.Exit(2)
+	}
 
 	if *version { // untested section
 		fmt.Println(Version)
@@ -72,14 +73,16 @@ func parseFlags() {
 	}
 
 	if *help { // untested section
-		flag.Usage()
+		set.Usage()
 		os.Exit(0)
 	}
 
-	if len(flag.Args()) != 0 { // untested section
-		flag.Usage()
+	if len(set.Args()) != 0 { // untested section
+		set.Usage()
 		os.Exit(2)
 	}
+
+	return set
 }
 
 // everything in here needs to be extra efficient

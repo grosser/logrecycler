@@ -35,14 +35,16 @@ describe "logrecycler" do
     call("--version").must_equal "master\n"
   end
 
-  it "fails with unknown arguments" do
-    call("--wut", expected_exit: 2).must_include "logrecycler"
+  it "fails fast with unknown arguments" do
+    out = call("--wut", expected_exit: 2)
+    out.must_include "flag provided"
+    out.wont_include "no such file or directory" # did not try to read file
   end
 
   it "fails nicely with no file" do
     with_config "" do
       File.unlink "logrecycler.yaml"
-      call("", expected_exit: 2).must_include "open logrecycler.yaml: no such file or directory"
+      call("", expected_exit: 2).must_equal "Error: open logrecycler.yaml: no such file or directory\n"
     end
   end
 
