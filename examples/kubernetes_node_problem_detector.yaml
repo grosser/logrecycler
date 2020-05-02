@@ -6,7 +6,7 @@ statsd:
   metric: node_problem_detector.log
 
 patterns:
-- regex: '^Rule: &{.*Condition:(?P<condition>\S+) .* Duration: (?P<duration>\d+\.\d+s)'
+- regex: '^Rule: &{.*Condition:(?P<condition>\S+) .* Duration: (?P<duration>\d+\.\d\S?+s)'
   add:
     message: Rule finished
     pattern: rule
