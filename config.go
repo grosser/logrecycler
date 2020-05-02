@@ -47,11 +47,11 @@ func NewConfig(path string) (*Config, error) {
 	// read config
 	var config Config
 	content, err := ioutil.ReadFile(path)
-	if err != nil { // untested section
+	if err != nil {
 		return nil, err
 	}
 
-	if err = yaml.UnmarshalStrict(content, &config); err != nil { // untested section
+	if err = yaml.UnmarshalStrict(content, &config); err != nil {
 		return nil, err
 	}
 

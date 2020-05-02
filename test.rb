@@ -58,13 +58,7 @@ describe "logrecycler" do
     end
   end
 
-  it "fails when using unknown config keys" do
-    with_config "oops: 123" do
-      call("", expected_exit: 2).must_include "field oops not found"
-    end
-  end
-
-  it "fails not passing stdin" do
+  it "fails when not passing stdin" do
     with_config "" do
       call("", expected_exit: 2).must_include "pipe logs"
     end

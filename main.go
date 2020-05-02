@@ -45,6 +45,7 @@ func main() {
 }
 
 // parse flags ... so we fail on unknown flags and users can call `-help`
+// TODO: don't play with global flags but return a flag object + use errors, then test this method
 func parseFlags() {
 	if flag.Parsed() {
 		return // we are in test and this already ran
