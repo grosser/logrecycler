@@ -224,6 +224,15 @@ var _ = Describe("main", func() {
 			})
 			Expect(received).To(Equal("foo.logs:1|c"))
 		})
+
+		It("does not report timestamps", func() {
+			received := receiveUdp(func() {
+				withConfig("---\nstatsd:\n  address: 0.0.0.0:8125\n  metric: foo.logs\ntimestampKey: ts", func() {
+					Expect(parse("hi")).To(ContainSubstring(`{"ts":"`))
+				})
+			})
+			Expect(received).To(Equal("foo.logs:1|c"))
+		})
 	})
 })
 

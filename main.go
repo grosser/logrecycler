@@ -135,10 +135,18 @@ func processLine(line string, config *Config) {
 
 	fmt.Println(log.ToJson())
 
-	delete(log.values, config.MessageKey) // nobody should use message as label
+	// remove keys nobody should be using as metrics, but can get set accidentally via captures
+	delete(log.values, config.MessageKey)
+	if config.timestampKeySet {
+		delete(log.values, config.TimestampKey)
+	}
+
+	// remove explicitly ignored labels
 	for _, l := range ignoreMetricLabels {
 		delete(log.values, l)
 	}
+
+	// report to metrics backends
 	if config.Prometheus != nil {
 		config.Prometheus.Inc(log.values)
 	}
