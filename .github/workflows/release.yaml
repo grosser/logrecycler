@@ -13,6 +13,8 @@ jobs:
       run: sed -i s/"master"/"${GITHUB_REF##*/}"/ main.go
     - name: compile and release
       uses: wangyoucao577/go-release-action@v1.4
+      env:
+        CGO_ENABLED: "0" # support alpine
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         goarch: amd64
@@ -26,6 +28,8 @@ jobs:
       run: sed -i s/"master"/"${GITHUB_REF##*/}"/ main.go
     - name: compile and release
       uses: wangyoucao577/go-release-action@v1.4
+      env:
+        CGO_ENABLED: "0" # support alpine
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         goarch: amd64
