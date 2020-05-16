@@ -42,7 +42,7 @@ preprocess: '[^\]]+\] (?P<message>.*)' # reduce noise from message by replacing 
 # enable prometheus /metrics
 # when using: try to use the same `add` value and the same named regex captures in patterns below
 # to avoid running out of memory
-prometheus: 
+prometheus:
   port: 1234
 
 # enable statsd metric
@@ -56,7 +56,7 @@ patterns:
 - regex: 'error.*parsing' # log line needs to match this
   level: ERROR
   add: # will appear in log and metric
-    pattern: parsing-error # using the same pattern key here, so we can group by pattern when reporting 
+    pattern: parsing-error # using the same pattern key here, so we can group by pattern when reporting
 # named captures go into logs, replacing message here too
 - regex: '(?P<message>error connecting .*) (?P<host>\S+):(?P<port>\d+)'
   level: ERROR
@@ -104,3 +104,9 @@ Create a new release via github UI, workflow will automatically build a new bina
 - support json log parsing and rewriting
 - basic benchmark of memory/cpu overhead (without counting startup time)
 - more examples
+
+
+# Author
+[Michael Grosser](http://grosser.it)<br/>
+michael@grosser.it<br/>
+License: MIT<br/>
