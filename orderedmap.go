@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"regexp"
 	"strings"
@@ -38,13 +39,19 @@ func (m *OrderedMap) StoreNamedCaptures(re *regexp.Regexp, match *[]string) {
 	}
 }
 
-// ordering json is obviously wrong ... thx go :/
+// go says ordering json is obviously wrong so we do it ourselves to keep things like level/timestamp first
+// to make the logs human-readable
 // https://github.com/golang/go/issues/27179
 // https://stackoverflow.com/questions/25182923/serialize-a-map-using-a-specific-order
 func (m *OrderedMap) ToJson() string {
 	buf := make([]string, len(m.keys))
 	for i, key := range m.keys {
-		buf[i] = fmt.Sprintf("\"%s\":\"%v\"", key, m.values[key])
+		valueBytes, err := json.Marshal(m.values[key])
+		value := string(valueBytes)
+		if err != nil {
+			value = "\"logrecycler error in json.Marshal\"" // untested section
+		}
+		buf[i] = fmt.Sprintf("\"%s\":%v", key, value)
 	}
 	return "{" + strings.Join(buf, ",") + "}"
 }

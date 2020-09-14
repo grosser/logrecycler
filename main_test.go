@@ -93,6 +93,12 @@ var _ = Describe("main", func() {
 		})
 	})
 
+	It("can log complex messages", func() {
+		withConfig("", func() {
+			Expect(parse("hi\"foo")).To(Equal(`{"message":"hi\"foo"}`))
+		})
+	})
+
 	Context("Glog", func() {
 		It("parses simple", func() {
 			withConfig("---\nglog: simple", func() {
