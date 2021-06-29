@@ -1,7 +1,7 @@
 # Logrecycler [![Build Status](https://travis-ci.org/grosser/logrecycler.svg)](https://travis-ci.org/grosser/logrecycler) [![coverage](https://img.shields.io/badge/coverage-100%25-success.svg)](https://github.com/grosser/go-testcov) [![Build](https://github.com/grosser/logrecycler/workflows/Build/badge.svg)](https://github.com/grosser/logrecycler/releases)
 
 Re-process logs from applications you cannot modify to:
-- convert plaintext from stdin to json
+- convert plaintext or glog logs from stdin to json on stdout
 - remove noise
 - add log levels / timestamp / details / captured values
 - emit prometheus metric
