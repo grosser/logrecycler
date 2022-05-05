@@ -4,12 +4,16 @@ on:
     types:
     - created # on push does not work and `on: release` triggers 3 builds
 jobs:
-  release-linux-amd64:
-    name: release linux/amd64
+  test:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        arch: [ 'amd64', 'arm64' ]
+        os: [ 'linux', 'darwin' ]
+    name: ${{ matrix.os }} ${{ matrix.arch }}
     steps:
     - uses: actions/checkout@master
-    - name: Version
+    - name: add version
       run: sed -i s/"master"/"${GITHUB_REF##*/}"/ main.go
     - name: compile and release
       uses: wangyoucao577/go-release-action@v1.4
@@ -17,23 +21,6 @@ jobs:
         CGO_ENABLED: "0" # support alpine
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
-        goarch: amd64
-        goos: linux
+        goarch: ${{ matrix.arch }}
+        goos:  ${{ matrix.os }}
         ldflags: "-s -w"
-  release-darwin-amd64:
-    name: release darwin/amd64
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@master
-    - name: Version
-      run: sed -i s/"master"/"${GITHUB_REF##*/}"/ main.go
-    - name: compile and release
-      uses: wangyoucao577/go-release-action@v1.4
-      env:
-        CGO_ENABLED: "0" # support alpine
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        goarch: amd64
-        goos: darwin
-        ldflags: "-s -w"
-
