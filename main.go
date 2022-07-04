@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"flag"
 	"fmt"
+	"math/rand"
 	"os"
 	"strconv"
 	"time"
@@ -30,6 +31,8 @@ func main() {
 		config.Statsd.Start()
 		defer config.Statsd.Stop()
 	}
+
+	rand.Seed(time.Now().UnixNano())
 
 	// read logs from stdin
 	if !pipingToStding() {
@@ -117,6 +120,12 @@ func processLine(line string, config *Config) {
 		if match := pattern.regexParsed.FindStringSubmatch(log.values[config.MessageKey]); match != nil {
 			if pattern.Discard {
 				return
+			}
+
+			if pattern.SampleRate != nil {
+				if rand.Float32() > *pattern.SampleRate {
+					return
+				}
 			}
 
 			// set level

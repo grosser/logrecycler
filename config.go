@@ -1,11 +1,13 @@
 package main
 
 import (
-	"gopkg.in/yaml.v2"
+	"fmt"
 	"io/ioutil"
 	"regexp"
 	"strconv"
 	"time"
+
+	"gopkg.in/yaml.v2"
 )
 
 type Pattern struct {
@@ -16,6 +18,7 @@ type Pattern struct {
 	Level              string
 	levelSet           bool
 	IgnoreMetricLabels []string `yaml:"ignoreMetricLabels"`
+	SampleRate         *float32 `yaml:"sampleRate"`
 }
 
 type Config struct {
@@ -65,6 +68,13 @@ func NewConfig(path string) (*Config, error) {
 		config.Patterns[i].regexParsed =
 			helpfulMustCompile(config.Patterns[i].Regex, "patterns["+strconv.Itoa(i)+"].regex")
 		config.Patterns[i].levelSet = (config.Patterns[i].Level != "")
+
+		if config.Patterns[i].SampleRate != nil {
+			rate := *config.Patterns[i].SampleRate
+			if rate < 0.0 || rate > 1.0 {
+				return nil, fmt.Errorf("sample must be between 0.0 - 1.0 but was %f", rate)
+			}
+		}
 	}
 	config.timestampKeySet = (config.TimestampKey != "")
 	config.levelKeySet = (config.LevelKey != "")

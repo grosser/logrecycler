@@ -2,8 +2,6 @@ package main
 
 import (
 	"bytes"
-	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/gomega"
 	"io"
 	"io/ioutil"
 	"math/rand"
@@ -14,6 +12,9 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
 )
 
 var _ = Describe("main", func() {
@@ -90,6 +91,18 @@ var _ = Describe("main", func() {
 	It("can discard", func() {
 		withConfig("---\npatterns:\n- regex: hi\n  discard: true", func() {
 			Expect(parse("hi foo")).To(Equal(``))
+		})
+	})
+
+	It("can sample", func() {
+		withConfig("---\npatterns:\n- regex: hi\n  sampleRate: 1.0", func() {
+			Expect(parse("hi foo")).To(Equal(`{"message":"hi foo"}`))
+		})
+	})
+
+	It("ignores when sample rate is zero", func() {
+		withConfig("---\npatterns:\n- regex: hi\n  sampleRate: 0.0", func() {
+			Expect(parse("hi foo")).To(Equal(""))
 		})
 	})
 
