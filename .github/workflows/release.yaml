@@ -4,7 +4,7 @@ on:
     types:
     - created # on push does not work and `on: release` triggers 3 builds
 jobs:
-  test:
+  release:
     runs-on: ubuntu-latest
     strategy:
       matrix:
