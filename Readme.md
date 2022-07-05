@@ -69,6 +69,11 @@ patterns:
   add:
     pattern: secret
     message: secret key redacted # override message
+- regex: 'Waited for .* due to client-side throttling'
+  level: INFO
+  sampleRate: 0.01 # sample only 1%
+  add:
+    pattern: throttle
 # discard spam
 - regex: 'todays weather is'
   discard: true
