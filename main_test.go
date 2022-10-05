@@ -136,6 +136,29 @@ var _ = Describe("main", func() {
 		})
 	})
 
+	Context("Json", func() {
+		It("parses simple", func() {
+			withConfig("---\njson: simple", func() {
+				Expect(parse("{\"message\":\"hi\"}")).
+					To(Equal(`{"message":"hi"}`))
+			})
+		})
+
+		It("can add non-strings", func() {
+			withConfig("---\njson: simple", func() {
+				Expect(parse("{\"foo\":123}")).
+					To(Equal(`{"message":"","foo":"123"}`))
+			})
+		})
+
+		It("ignores invalid", func() {
+			withConfig("---\njson: simple", func() {
+				Expect(parse("{}}}")).
+					To(Equal(`{"message":"{}}}"}`))
+			})
+		})
+	})
+
 	Context("preprocess", func() {
 		It("Ignores non-matching", func() {
 			withConfig("---\npreprocess: (?P<greeting>oops) (?P<message>.*)\npatterns:\n- regex: (?P<rest>.*)", func() {
@@ -215,7 +238,7 @@ var _ = Describe("main", func() {
 					parse("hi foo")
 				})
 			})
-			Expect(received).To(Equal("foo.logs:1|c\n"))
+			Expect(received).To(Equal("foo.logs:1|c"))
 		})
 
 		It("reports additions", func() {
@@ -224,7 +247,7 @@ var _ = Describe("main", func() {
 					parse("hi foo")
 				})
 			})
-			Expect(received).To(Equal("foo.logs:1|c|#foo:bar\n"))
+			Expect(received).To(Equal("foo.logs:1|c|#foo:bar"))
 		})
 
 		It("reports preprocess", func() {
@@ -233,7 +256,7 @@ var _ = Describe("main", func() {
 					parse("hi foo")
 				})
 			})
-			Expect(received).To(Equal("foo.logs:1|c|#name:foo\n"))
+			Expect(received).To(Equal("foo.logs:1|c|#name:foo"))
 		})
 
 		It("does not report message override", func() {
@@ -242,7 +265,7 @@ var _ = Describe("main", func() {
 					parse("hi foo")
 				})
 			})
-			Expect(received).To(Equal("foo.logs:1|c\n"))
+			Expect(received).To(Equal("foo.logs:1|c"))
 		})
 
 		It("does not report timestamps", func() {
@@ -251,7 +274,19 @@ var _ = Describe("main", func() {
 					Expect(parse("hi")).To(ContainSubstring(`{"ts":"`))
 				})
 			})
-			Expect(received).To(Equal("foo.logs:1|c\n"))
+			Expect(received).To(Equal("foo.logs:1|c"))
+		})
+
+		It("ignores when AllowMetricLabels is set", func() {
+			received := receiveUdp(func() {
+				withConfig("---\nstatsd:\n  address: 0.0.0.0:8125\n  metric: foo.logs\njson: simple\nallowMetricLabels: [this]", func() {
+					output := parse(`{"this":"1","that":"2"}`)
+					Expect(output).To(ContainSubstring(`{"message":"","t`)) // order of this and that is not guaranteed
+					Expect(output).To(ContainSubstring(`"this":"1"`))
+					Expect(output).To(ContainSubstring(`"that":"2"`))
+				})
+			})
+			Expect(received).To(Equal("foo.logs:1|c|#this:1"))
 		})
 	})
 })

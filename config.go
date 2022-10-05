@@ -22,19 +22,22 @@ type Pattern struct {
 }
 
 type Config struct {
-	Prometheus       *Prometheus
-	Statsd           *Statsd
-	Glog             string
-	glogSet          bool
-	TimestampKey     string `yaml:"timestampKey"`
-	timestampKeySet  bool
-	LevelKey         string `yaml:"levelKey"`
-	levelKeySet      bool
-	MessageKey       string `yaml:"messageKey"`
-	Patterns         []Pattern
-	Preprocess       string
-	preprocessSet    bool
-	preprocessParsed *regexp.Regexp
+	Prometheus        *Prometheus
+	Statsd            *Statsd
+	Glog              string
+	glogSet           bool
+	Json              string
+	jsonSet           bool
+	AllowMetricLabels []string `yaml:"allowMetricLabels"`
+	TimestampKey      string   `yaml:"timestampKey"`
+	timestampKeySet   bool
+	LevelKey          string `yaml:"levelKey"`
+	levelKeySet       bool
+	MessageKey        string `yaml:"messageKey"`
+	Patterns          []Pattern
+	Preprocess        string
+	preprocessSet     bool
+	preprocessParsed  *regexp.Regexp
 }
 
 var glogRegex = regexp.MustCompile(`^([IWEF])(\d{2})(\d{2}) (\d{2}):(\d{2}):(\d{2})\.\d+ +\d+ \S+:\d+] `)
@@ -79,6 +82,7 @@ func NewConfig(path string) (*Config, error) {
 	config.timestampKeySet = (config.TimestampKey != "")
 	config.levelKeySet = (config.LevelKey != "")
 	config.glogSet = (config.Glog != "")
+	config.jsonSet = (config.Json != "")
 
 	// preprocess
 	config.preprocessSet = (config.Preprocess != "")
