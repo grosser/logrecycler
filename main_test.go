@@ -214,7 +214,7 @@ var _ = Describe("main", func() {
 					parse("hi foo")
 				})
 			})
-			Expect(received).To(Equal("foo.logs:1|c"))
+			Expect(received).To(Equal("foo.logs:1|c\n"))
 		})
 
 		It("reports additions", func() {
@@ -223,7 +223,7 @@ var _ = Describe("main", func() {
 					parse("hi foo")
 				})
 			})
-			Expect(received).To(Equal("foo.logs:1|c|#foo:bar"))
+			Expect(received).To(Equal("foo.logs:1|c|#foo:bar\n"))
 		})
 
 		It("reports preprocess", func() {
@@ -232,7 +232,7 @@ var _ = Describe("main", func() {
 					parse("hi foo")
 				})
 			})
-			Expect(received).To(Equal("foo.logs:1|c|#name:foo"))
+			Expect(received).To(Equal("foo.logs:1|c|#name:foo\n"))
 		})
 
 		It("does not report message override", func() {
@@ -241,7 +241,7 @@ var _ = Describe("main", func() {
 					parse("hi foo")
 				})
 			})
-			Expect(received).To(Equal("foo.logs:1|c"))
+			Expect(received).To(Equal("foo.logs:1|c\n"))
 		})
 
 		It("does not report timestamps", func() {
@@ -250,7 +250,7 @@ var _ = Describe("main", func() {
 					Expect(parse("hi")).To(ContainSubstring(`{"ts":"`))
 				})
 			})
-			Expect(received).To(Equal("foo.logs:1|c"))
+			Expect(received).To(Equal("foo.logs:1|c\n"))
 		})
 	})
 })
