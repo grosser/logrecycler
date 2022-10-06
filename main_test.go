@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"math/rand"
@@ -130,7 +131,7 @@ var _ = Describe("main", func() {
 		It("parses time", func() {
 			withConfig("---\nglog: simple\ntimestampKey: ts", func() {
 				Expect(parse("I0203 02:03:04.12345     123 foo.go:123] hi")).
-					To(Equal(`{"ts":"2020-02-03T02:03:04Z","message":"hi"}`))
+					To(Equal(`{"ts":"` + fmt.Sprint(time.Now().Year()) + `-02-03T02:03:04Z","message":"hi"}`))
 			})
 		})
 	})
