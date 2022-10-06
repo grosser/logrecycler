@@ -37,7 +37,9 @@ timestampKey: ts # what to call the timestamp in the logs (for example @timestam
 levelKey: level # what to call the level in the logs (for example level/lvl/severity, leave empty for no level)
 messageKey: msg # what to call the message in the logs (leave empty for 'message')
 glog: simple # convert glog style prefix ([IWEF]mmdd hh:mm:ss.uuuuuu threadid file:line] message) into timestamp/level/message
+json: simple # assume input starting with `{` and ending with `}` as json and merge it, also set allowMetricLabels to avoid metric spam and match the level+message+timestamp keys with the input
 preprocess: '[^\]]+\] (?P<message>.*)' # reduce noise from message by replacing it with captured (for example remove, leave empty for none)
+allowMetricLabels: [foo] # ignore everything but these
 
 # enable prometheus /metrics
 # when using: try to use the same `add` value and the same named regex captures in patterns below

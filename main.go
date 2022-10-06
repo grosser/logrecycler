@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"encoding/json"
 	"flag"
 	"fmt"
 	"math/rand"
@@ -114,6 +115,14 @@ func processLine(line string, config *Config) {
 		}
 	}
 
+	// parse our json
+	if config.jsonSet {
+		message := log.values[config.MessageKey]
+		if message[0] == '{' && message[len(message)-1] == '}' {
+			captureJson(config, log)
+		}
+	}
+
 	// apply pattern rules if any
 	var ignoreMetricLabels []string
 	for _, pattern := range config.Patterns {
@@ -150,6 +159,17 @@ func processLine(line string, config *Config) {
 		delete(log.values, config.TimestampKey)
 	}
 
+	// remove not explicitly allowed labels
+	if config.AllowMetricLabels != nil {
+		previous := log.values
+		log.values = map[string]string{}
+		for _, l := range config.AllowMetricLabels {
+			if previousValue, previousSet := previous[l]; previousSet {
+				log.values[l] = previousValue
+			}
+		}
+	}
+
 	// remove explicitly ignored labels
 	for _, l := range ignoreMetricLabels {
 		delete(log.values, l)
@@ -161,6 +181,24 @@ func processLine(line string, config *Config) {
 	}
 	if config.Statsd != nil {
 		config.Statsd.Inc(log.values)
+	}
+}
+
+// TODO: this should ideally keep the ordering of the json keys
+func captureJson(config *Config, log *OrderedMap) {
+	jsonMap := make(map[string](interface{}))
+	err := json.Unmarshal([]byte(log.values[config.MessageKey]), &jsonMap)
+	if err != nil {
+		return
+	}
+
+	// we split up the message, so discard it
+	// TODO: deal with json that did not have a message by cleanly removing it
+	log.values[config.MessageKey] = ""
+
+	for k, v := range jsonMap {
+		// TODO: allow parsing through any json type by not using Sprintf
+		log.Set(k, fmt.Sprintf("%v", v))
 	}
 }
 
