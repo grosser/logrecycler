@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"math/rand"
@@ -130,7 +131,7 @@ var _ = Describe("main", func() {
 		It("parses time", func() {
 			withConfig("---\nglog: simple\ntimestampKey: ts", func() {
 				Expect(parse("I0203 02:03:04.12345     123 foo.go:123] hi")).
-					To(Equal(`{"ts":"2020-02-03T02:03:04Z","message":"hi"}`))
+					To(Equal(`{"ts":"` + fmt.Sprint(time.Now().Year()) + `-02-03T02:03:04Z","message":"hi"}`))
 			})
 		})
 	})
@@ -214,7 +215,7 @@ var _ = Describe("main", func() {
 					parse("hi foo")
 				})
 			})
-			Expect(received).To(Equal("foo.logs:1|c"))
+			Expect(received).To(Equal("foo.logs:1|c\n"))
 		})
 
 		It("reports additions", func() {
@@ -223,7 +224,7 @@ var _ = Describe("main", func() {
 					parse("hi foo")
 				})
 			})
-			Expect(received).To(Equal("foo.logs:1|c|#foo:bar"))
+			Expect(received).To(Equal("foo.logs:1|c|#foo:bar\n"))
 		})
 
 		It("reports preprocess", func() {
@@ -232,7 +233,7 @@ var _ = Describe("main", func() {
 					parse("hi foo")
 				})
 			})
-			Expect(received).To(Equal("foo.logs:1|c|#name:foo"))
+			Expect(received).To(Equal("foo.logs:1|c|#name:foo\n"))
 		})
 
 		It("does not report message override", func() {
@@ -241,7 +242,7 @@ var _ = Describe("main", func() {
 					parse("hi foo")
 				})
 			})
-			Expect(received).To(Equal("foo.logs:1|c"))
+			Expect(received).To(Equal("foo.logs:1|c\n"))
 		})
 
 		It("does not report timestamps", func() {
@@ -250,7 +251,7 @@ var _ = Describe("main", func() {
 					Expect(parse("hi")).To(ContainSubstring(`{"ts":"`))
 				})
 			})
-			Expect(received).To(Equal("foo.logs:1|c"))
+			Expect(received).To(Equal("foo.logs:1|c\n"))
 		})
 	})
 })
