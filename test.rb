@@ -24,7 +24,7 @@ describe "logrecycler" do
 
   def call(extra, **args)
     full_path = File.expand_path("./logrecycler", __dir__)
-    sh("#{full_path} #{extra}", **args)
+    _(sh("#{full_path} #{extra}", **args))
   end
 
   it "can show help" do
