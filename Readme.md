@@ -33,24 +33,24 @@ Configure a `logrecycler.yaml` in your project root:
 
 ```yaml
 # optional settings
-timestampKey: ts # what to call the timestamp in the logs (for example @timestamp, ts, leave empty for no timestamp)
-levelKey: level # what to call the level in the logs (for example level/lvl/severity, leave empty for no level)
-messageKey: msg # what to call the message in the logs (leave empty for 'message')
-glog: simple # convert glog style prefix ([IWEF]mmdd hh:mm:ss.uuuuuu threadid file:line] message) into timestamp/level/message
-json: simple # assume input starting with `{` and ending with `}` as json and merge it, also set allowMetricLabels to avoid metric spam and match the level+message+timestamp keys with the input
-preprocess: '[^\]]+\] (?P<message>.*)' # reduce noise from message by replacing it with captured (for example remove, leave empty for none)
-allowMetricLabels: [foo] # ignore everything but these
+# timestampKey: ts # what to call the timestamp in the logs (for example @timestamp, ts, leave empty for no timestamp)
+# levelKey: level # what to call the level in the logs (for example level/lvl/severity, leave empty for no level)
+# messageKey: msg # what to call the message in the logs (leave empty for 'message')
+# glog: simple # convert glog style prefix ([IWEF]mmdd hh:mm:ss.uuuuuu threadid file:line] message) into timestamp/level/message
+# json: simple # assume input starting with `{` and ending with `}` as json and merge it, also set allowMetricLabels to avoid metric spam and match the level+message+timestamp keys with the input
+# preprocess: '[^\]]+\] (?P<message>.*)' # reduce noise from message by replacing it with captured (for example remove, leave empty for none)
+# allowMetricLabels: [foo] # ignore everything but these
 
 # enable prometheus /metrics
 # when using: try to use the same `add` value and the same named regex captures in patterns below
 # to avoid running out of memory
-prometheus:
-  port: 1234
+# prometheus:
+#   port: 1234
 
 # enable statsd metric
-statsd:
-  address: 0.0.0.0:8125
-  metric: my_app.logs
+# statsd:
+#   address: 0.0.0.0:8125
+#   metric: my_app.logs
 
 # patterns to match ... each log line only match the first matching pattern
 patterns:
