@@ -21,7 +21,7 @@ require (
 	github.com/prometheus/procfs v0.0.8 // indirect
 	golang.org/x/net v0.0.0-20190613194153-d28f0bde5980 // indirect
 	golang.org/x/sys v0.0.0-20220928140112-f11e5e49a4ec // indirect
-	golang.org/x/text v0.3.0 // indirect
+	golang.org/x/text v0.3.8 // indirect
 	golang.org/x/xerrors v0.0.0-20191204190536-9bdfabe68543 // indirect
 	gopkg.in/fsnotify.v1 v1.4.7 // indirect
 	gopkg.in/tomb.v1 v1.0.0-20141024135613-dd632973f1e7 // indirect
