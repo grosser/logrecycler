@@ -104,7 +104,9 @@ set -o pipefail; <your-program-here> | logrecycler
 
 ## Release
 
-Create a new release via github UI, workflow will automatically build a new binary.
+- manually tag on master
+- create a new release via github UI
+- GA workflow will automatically build a new binary
 
 ## TODO
 - `glog: full` to also capture `location` and `thread`
