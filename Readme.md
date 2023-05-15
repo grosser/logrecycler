@@ -1,7 +1,7 @@
 # Logrecycler [![Build Status](https://travis-ci.org/grosser/logrecycler.svg)](https://travis-ci.org/grosser/logrecycler) [![coverage](https://img.shields.io/badge/coverage-100%25-success.svg)](https://github.com/grosser/go-testcov) [![Build](https://github.com/grosser/logrecycler/workflows/Build/badge.svg)](https://github.com/grosser/logrecycler/releases)
 
 Re-process logs from applications you cannot modify to:
-- convert plaintext or glog logs from stdin to json on stdout
+- convert plaintext or glog logs from stdin (or command) to json on stdout
 - remove noise
 - add log levels / timestamp / details / captured values
 - emit prometheus metric
@@ -21,7 +21,7 @@ stdout: {"ts":"2020-05-30 10:13:00","level":"error","message":"error connecting 
 
 ## Install
 
-Download [latest binary](https://github.com/grosser/logrecycler/releases):
+Download the [latest binary](https://github.com/grosser/logrecycler/releases):
 
 ```
 curl -sfL <PICK URL FROM RELEASES PAGE> | tar -zx && chmod +x logrecycler && ./logrecycler --version
@@ -92,6 +92,12 @@ Pipe your logs to the recycler:
 
 ```
 set -o pipefail; <your-program-here> | logrecycler
+```
+
+or make the recycler call your command:
+
+```
+logrecycler -- <your-program-here>
 ```
 
 # Development

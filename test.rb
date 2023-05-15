@@ -1,6 +1,12 @@
+# integration tests that test exit codes and piping/commands since that is hard in go
+#
+# run individual tests by passing their name as regex
+# ruby test.rb -n '/returns the commands exit code/'
+
 require "minitest/autorun"
 require "tmpdir"
 require "timeout"
+require "benchmark"
 
 def sh(command, expected_exit: 0, timeout: 1)
   result = Timeout.timeout(timeout, RuntimeError, "Timed out when running #{command}") { `#{command} 2>&1` }
@@ -13,6 +19,8 @@ end
 sh "go build .", timeout: 10
 
 describe "logrecycler" do
+  standard_boot_time = 0.5 # basic execution takes 0.2 locally, so we need to wait longer to make sure program started
+
   def with_config(content)
     Dir.mktmpdir do |dir|
       Dir.chdir(dir) do
@@ -22,9 +30,11 @@ describe "logrecycler" do
     end
   end
 
-  def call(extra, **args)
+  def call(extra, pipe: "", **args)
     full_path = File.expand_path("./logrecycler", __dir__)
-    _(sh("#{full_path} #{extra}", **args))
+    command = "#{full_path} #{extra}"
+    command = "echo #{pipe} | #{command}" if pipe
+    _(sh(command, **args))
   end
 
   it "can show help" do
@@ -62,7 +72,65 @@ describe "logrecycler" do
 
   it "fails when not passing stdin" do
     with_config "" do
-      call("", expected_exit: 2).must_include "pipe logs"
+      call("", pipe: nil, expected_exit: 2).must_include "pipe logs"
+    end
+  end
+
+  describe "commands" do
+    it "fails when piping with command" do
+      with_config "" do
+        call("-- echo 12", expected_exit: 2).must_include "logrecycler"
+      end
+    end
+
+    it "can process a command that finishes" do
+      with_config "" do
+        call("-- echo 12", pipe: nil).must_equal "{\"message\":\"12\"}\n"
+      end
+    end
+
+    it "can stream a command that streams" do
+      wait = standard_boot_time
+      with_config "" do
+        duration = Benchmark.realtime do
+          call("-- sh -c 'echo 1; sleep #{wait};echo 2'", pipe: nil).must_equal "{\"message\":\"1\"}\n{\"message\":\"2\"}\n"
+        end
+        _(duration).must_be :>=, wait
+        _(duration).must_be :<=, wait * 2 # make sure it does not just always wait 1s
+      end
+    end
+
+    it "returns the commands exit code" do
+      with_config "" do
+        call("-- sh -c 'exit 13'", pipe: nil, expected_exit: 13).must_equal ""
+      end
+    end
+
+    it "fails when command fails" do
+      with_config "" do
+        call("-- wuuut", pipe: nil, expected_exit: 2).must_include "executable file not found"
+      end
+    end
+
+    it "does not leave command running when getting signaled" do
+      time = 5
+      check_ps = ->(size) do
+        ps = sh("ps -ef | grep '[s]leep #{time}'", expected_exit: size == 0 ? 1 : 0)
+        _(ps.split("\n").size).must_equal size, ps
+      end
+
+      with_config "" do
+        Thread.new do
+          sleep standard_boot_time
+          check_ps.(3)
+          sh "pkill -f 'logrecycler -- sleep #{time}'"
+        end
+        duration = Benchmark.realtime do
+          call("-- sleep #{time}", pipe: nil, expected_exit: nil).must_equal ""
+        end
+        _(duration).must_be :>=, standard_boot_time
+        check_ps.(0)
+      end
     end
   end
 end

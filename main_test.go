@@ -113,6 +113,12 @@ var _ = Describe("main", func() {
 		})
 	})
 
+	It("can call command", func() {
+		withConfig("", func() {
+			Expect(parseCommand("hi\"foo")).To(Equal(`{"message":"hi\"foo"}`))
+		})
+	})
+
 	Context("Glog", func() {
 		It("parses simple", func() {
 			withConfig("---\nglog: simple", func() {
@@ -301,6 +307,15 @@ func parse(input string) (output string) {
 		output = captureStdout(func() { main() })
 		output = strings.TrimRight(output, "\n")
 	})
+	return
+}
+
+func parseCommand(input string) (output string) {
+	before := os.Args
+	os.Args = []string{"foo", "--", "echo", input}
+	defer func() { os.Args = before }()
+	output = captureStdout(func() { main() })
+	output = strings.TrimRight(output, "\n")
 	return
 }
 
