@@ -112,6 +112,13 @@ describe "logrecycler" do
       end
     end
 
+    it "stops when command is killed" do
+      with_config "" do
+        Thread.new { sleep standard_boot_time; sh("pkill -f '^sleep 999'") }
+        call("-- sleep 999", pipe: nil, expected_exit: 255).must_equal ""
+      end
+    end
+
     it "does not leave command running when getting signaled" do
       time = 5
       check_ps = ->(size) do
