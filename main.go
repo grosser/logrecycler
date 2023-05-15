@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"io"
 	"math/rand"
 	"os"
 	"strconv"
@@ -14,12 +15,19 @@ import (
 const Version = "master" // dynamically set by release action
 
 func main() {
-	set := parseFlags()
+	set, command := parseFlags()
+
+	// prevent unsupported dual/no-input usage
+	if isPipingToStdin() == (len(command) != 0) {
+		// untested section
+		set.Usage()
+		os.Exit(2)
+	}
 
 	config, err := NewConfig("logrecycler.yaml")
 	if err != nil {
 		// untested section
-		fmt.Fprintf(os.Stderr, "Error: %v\n", err.Error())
+		_, _ = fmt.Fprintf(os.Stderr, "Error: %v\n", err.Error())
 		os.Exit(2)
 	}
 
@@ -35,29 +43,53 @@ func main() {
 
 	rand.Seed(time.Now().UnixNano())
 
-	// read logs from stdin
-	if !pipingToStding() {
-		// untested section
-		set.Usage()
-		os.Exit(2)
+	var stream io.Reader
+	var exit chan (int)
+
+	if len(command) != 0 {
+		// read from command
+		stream, exit, err = executeCommand(command)
+		if err != nil {
+			// untested section
+			_, _ = fmt.Fprintln(os.Stderr, err.Error())
+			os.Exit(2)
+		}
+	} else {
+		// read from stdin
+		stream = os.Stdin
 	}
-	scanner := bufio.NewScanner(os.Stdin)
+
+	// process the stream line by line
+	scanner := bufio.NewScanner(stream)
 	for scanner.Scan() {
 		line := scanner.Text()
 		processLine(line, config)
+	}
+
+	// exit with the exit code of the command
+	if exit != nil {
+		exitCode := <-exit
+		if exitCode != 0 {
+			// untested section
+			os.Exit(exitCode)
+		}
 	}
 }
 
 // parse flags ... so we fail on unknown flags and users can call `-help`
 // TODO: return errors so we can test this method
-func parseFlags() *flag.FlagSet {
-	set := flag.NewFlagSet(os.Args[0], flag.ContinueOnError)
+func parseFlags() (*flag.FlagSet, []string) {
+	programName, args := os.Args[0], os.Args[1:]
+	args, command := splitArrayOn(args, "--")
+
+	set := flag.NewFlagSet(programName, flag.ContinueOnError)
 
 	set.Usage = func() { // untested section
-		fmt.Fprintf(
+		_, _ = fmt.Fprintf(
 			os.Stderr,
 			"logrecycler "+Version+"\n"+
 				"pipe logs to logrecycler to convert them into json logs with custom tags\n"+
+				"alternatively tell it what command to execute with `-- command`\n"+
 				"configure with logrecycler.yaml\n"+
 				"for more info see https://github.com/grosser/logrecycler\n",
 		)
@@ -66,7 +98,7 @@ func parseFlags() *flag.FlagSet {
 	version := set.Bool("version", false, "Show version")
 	help := set.Bool("help", false, "Show this")
 
-	if err := set.Parse(os.Args[1:]); err != nil { // untested section
+	if err := set.Parse(args); err != nil { // untested section
 		set.Usage()
 		os.Exit(2)
 	}
@@ -86,7 +118,7 @@ func parseFlags() *flag.FlagSet {
 		os.Exit(2)
 	}
 
-	return set
+	return set, command
 }
 
 // everything in here needs to be extra efficient
