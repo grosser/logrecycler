@@ -2,7 +2,7 @@ language: go
 sudo: false
 branches:
   only: [master]
-go: "1.14"
+go: "1.19"
 
 # executes all but fails if any failed
 # keep in sync with .travis.yml
