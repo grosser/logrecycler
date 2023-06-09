@@ -23,4 +23,4 @@ jobs:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         goarch: ${{ matrix.arch }}
         goos:  ${{ matrix.os }}
-        ldflags: "-s -w"
+        build_command: make build_release
