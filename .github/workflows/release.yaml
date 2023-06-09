@@ -16,11 +16,10 @@ jobs:
     - name: add version
       run: sed -i s/"master"/"${GITHUB_REF##*/}"/ main.go
     - name: compile and release
-      uses: wangyoucao577/go-release-action@v1.28
+      uses: wangyoucao577/go-release-action@v1.38
       env:
         CGO_ENABLED: "0" # support alpine
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         goarch: ${{ matrix.arch }}
         goos:  ${{ matrix.os }}
-        build_command: make build_release

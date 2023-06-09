@@ -100,6 +100,12 @@ or make the recycler call your command:
 logrecycler -- <your-program-here>
 ```
 
+## SVM
+
+The released go binary includes dependency metadata,
+if you do not use prometheus or do not expose the prometheus endpoint to the public,
+you should `strip` the logrecycler binary, to avoid false positive vulnerability detection.
+
 # Development
 
 ## Test
