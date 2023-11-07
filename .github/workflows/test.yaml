@@ -11,10 +11,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
-    - name: Set up Go
-      uses: actions/setup-go@v2
+    - name: Setup Golang
+      uses: actions/setup-go@v4.1.0
       with:
-        go-version: 1.18
+        go-version-file: go.mod
     - name: install go-testcov
       run: go install github.com/grosser/go-testcov@latest
     - name: run tests
