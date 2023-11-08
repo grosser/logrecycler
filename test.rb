@@ -18,8 +18,6 @@ end
 
 sh "go build .", timeout: 10
 
-$stdin.reopen("/dev/null") # somehow github actions have an open stdin so we need to close it
-
 describe "logrecycler" do
   standard_boot_time = 0.5 # basic execution takes 0.2 locally, so we need to wait longer to make sure program started
 

@@ -17,5 +17,10 @@ jobs:
         go-version-file: go.mod
     - name: install go-testcov
       run: go install github.com/grosser/go-testcov@latest
-    - name: run tests
-      run: make test
+    - run: make
+    # when running in `make` somehow stdin is open and stdout is closed and that leads to errors
+    # (stdin breaks ruby test + make go test print extra things and stdout breaks go-testcov)
+    # keen in sync with `make test`
+    - run: go-testcov . -covermode atomic </dev/null
+    - run: ruby test.rb -v </dev/null
+    - run: make style
