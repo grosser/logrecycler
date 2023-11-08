@@ -15,9 +15,7 @@ import (
 const Version = "master" // dynamically set by release action
 
 func main() {
-	old := os.Args
 	set, command := parseFlags()
-	fmt.Println(fmt.Sprintf("args %q -- command %q", old, command))
 
 	// prevent unsupported dual/no-input usage
 	if isPipingToStdin() == (len(command) != 0) {
