@@ -16,10 +16,6 @@ def sh(command, expected_exit: 0, timeout: 1)
   result
 end
 
-def pending_ci
-  skip "Need to fix for CI" if ENV["CI"]
-end
-
 sh "go build .", timeout: 10
 
 describe "logrecycler" do
@@ -38,7 +34,7 @@ describe "logrecycler" do
     full_path = File.expand_path("./logrecycler", __dir__)
     command = "#{full_path} #{extra}"
     command = "echo #{pipe} | #{command}" if pipe
-    _(sh(command, **args))
+    _(p(sh(command, **args)))
   end
 
   it "can show help" do
@@ -69,14 +65,12 @@ describe "logrecycler" do
   end
 
   it "shows location when failing on bad regex in pattern" do
-    pending_ci
     with_config "patterns:\n- regex: '((((WUT'" do
       call("", expected_exit: 1).must_equal "Error: regular expression from patterns[0].regex: error parsing regexp: missing closing ): `((((WUT`"
     end
   end
 
-  it "fails when not passing stdin" do
-    pending_ci
+  it "fails when neither passing stdin nor args" do
     with_config "" do
       call("", pipe: nil, expected_exit: 2).must_include "pipe logs"
     end
@@ -90,14 +84,12 @@ describe "logrecycler" do
     end
 
     it "can process a command that finishes" do
-      pending_ci
       with_config "" do
         call("-- echo 12", pipe: nil).must_equal "{\"message\":\"12\"}\n"
       end
     end
 
     it "can stream a command that streams" do
-      pending_ci
       wait = standard_boot_time
       with_config "" do
         duration = Benchmark.realtime do
@@ -109,21 +101,18 @@ describe "logrecycler" do
     end
 
     it "returns the commands exit code" do
-      pending_ci
       with_config "" do
         call("-- sh -c 'exit 13'", pipe: nil, expected_exit: 13).must_equal ""
       end
     end
 
     it "fails when command fails" do
-      pending_ci
       with_config "" do
         call("-- wuuut", pipe: nil, expected_exit: 2).must_include "executable file not found"
       end
     end
 
     it "stops when command is killed" do
-      pending_ci
       with_config "" do
         Thread.new { sleep standard_boot_time; sh("pkill -f '^sleep 999'") }
         call("-- sleep 999", pipe: nil, expected_exit: 255).must_equal ""
@@ -131,7 +120,6 @@ describe "logrecycler" do
     end
 
     it "does not leave command running when getting signaled" do
-      pending_ci
       time = 5
       check_ps = ->(size) do
         ps = sh("ps -ef | grep '[s]leep #{time}'", expected_exit: size == 0 ? 1 : 0)
