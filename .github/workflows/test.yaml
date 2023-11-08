@@ -18,4 +18,4 @@ jobs:
     - name: install go-testcov
       run: go install github.com/grosser/go-testcov@latest
     - name: run tests
-      run: make test
+      run: go-testcov . -covermode atomic
