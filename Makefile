@@ -1,11 +1,14 @@
-.PHONY: default test
+.PHONY: default test style
 
 default:
 	go build .
 
-# somehow github actions have an open stdin so we need to close it
-test: default
-	go-testcov . -covermode atomic </dev/null
-	ruby test.rb -v </dev/null
+# keep in sync with .github/workflows/test.yaml
+test:
+	go-testcov . -covermode atomic
+	ruby test.rb -v
+	make style
+
+style:
 	go mod tidy && git diff --exit-code
 	go fmt . && git diff --exit-code
