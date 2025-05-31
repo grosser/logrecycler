@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
 	"io"
 	"os"
@@ -103,20 +102,24 @@ func (b ReaderChannel) Read(p []byte) (n int, err error) {
 func executeCommand(command []string) (io.Reader, chan (int), error) {
 	cmd := exec.Command(command[0], command[1:]...)
 	exit := make(chan int)
-	output := ReaderChannel{make(chan []byte)}
+	//output := ReaderChannel{make(chan []byte)}
 
 	// Send all output into a pipe
-	pipeReader, pipeWriter, err := os.Pipe()
+	//pipeReader, pipeWriter, err := os.Pipe()
+	//if err != nil {
+	//	// untested section
+	//	return nil, nil, err
+	//}
+	//cmd.Stdout = pipeWriter
+	//cmd.Stderr = pipeWriter
+
+	stdoutPipe, err := cmd.StdoutPipe()
 	if err != nil {
-		// untested section
 		return nil, nil, err
 	}
-	cmd.Stdout = pipeWriter
-	cmd.Stderr = pipeWriter
 
 	// Start the command
-	err = cmd.Start()
-	if err != nil {
+	if err := cmd.Start(); err != nil {
 		// untested section
 		return nil, nil, err
 	}
@@ -127,28 +130,29 @@ func executeCommand(command []string) (io.Reader, chan (int), error) {
 	go func() {
 		s, open := <-signalChannel
 		if open {
+			fmt.Println("PASSING signal:", s)
 			// untested section
 			_ = cmd.Process.Signal(s)
 		}
 	}()
 
 	// Stream the output to the buffer, to be consumed by the log parser
-	go func() {
-		scanner := bufio.NewScanner(pipeReader)
-		for scanner.Scan() {
-			output.channel <- append(scanner.Bytes(), '\n')
-		}
-		close(output.channel)
-	}()
+	//go func() {
+	//	scanner := bufio.NewScanner(pipeReader)
+	//	for scanner.Scan() {
+	//		output.channel <- append(scanner.Bytes(), '\n')
+	//	}
+	//	close(output.channel)
+	//}()
 
 	// Wait for the command to finish and store the exit code
 	go func() {
 		_ = cmd.Wait()
-		_ = pipeReader.Close() // make scanner stop
-		_ = pipeWriter.Close()
+		//_ = pipeReader.Close() // make scanner stop
+		//_ = pipeWriter.Close()
 		close(signalChannel) // make sure exiting the program does not re-signal ourselves
 		exit <- cmd.ProcessState.ExitCode()
 	}()
 
-	return output, exit, nil
+	return stdoutPipe, exit, nil
 }
