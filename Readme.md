@@ -21,10 +21,21 @@ stdout: {"ts":"2020-05-30 10:13:00","level":"error","message":"error connecting 
 
 ## Install
 
+### Option 1: Download
 Download the [latest binary](https://github.com/grosser/logrecycler/releases):
 
 ```
 curl -sfL <PICK URL FROM RELEASES PAGE> | tar -zx && chmod +x logrecycler && ./logrecycler --version
+```
+
+### Option 2: Build from source
+
+```
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends git make golang && \
+    rm -rf /var/lib/apt/lists/*
+RUN git clone https://github.com/grosser/logrecycler.git logrecycler --quiet --depth=1 --branch grosser/native && \
+    cd logrecycler && make && ./logrecycler --version
 ```
 
 ## Configure
