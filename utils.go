@@ -103,9 +103,10 @@ func (b ReaderChannel) Read(p []byte) (n int, err error) {
 func executeCommand(command []string) (io.Reader, chan (int), error) {
 	cmd := exec.Command(command[0], command[1:]...)
 	exit := make(chan int)
-	output := ReaderChannel{make(chan []byte)}
+	output := ReaderChannel{make(chan []byte, 100)} // buffered channel to avoid blocking the writer
 
 	// Send all output into a pipe
+	// TODO: ideally we return 2 streams so that processLine can also print to stdout or stderr
 	pipeReader, pipeWriter, err := os.Pipe()
 	if err != nil {
 		// untested section
@@ -127,6 +128,7 @@ func executeCommand(command []string) (io.Reader, chan (int), error) {
 	go func() {
 		s, open := <-signalChannel
 		if open {
+			fmt.Println("LOG-DEBUG Received signal:", s)
 			// untested section
 			_ = cmd.Process.Signal(s)
 		}
@@ -138,12 +140,14 @@ func executeCommand(command []string) (io.Reader, chan (int), error) {
 		for scanner.Scan() {
 			output.channel <- append(scanner.Bytes(), '\n')
 		}
+		fmt.Println("LOG-DEBUG CLOSED")
 		close(output.channel)
 	}()
 
 	// Wait for the command to finish and store the exit code
 	go func() {
 		_ = cmd.Wait()
+		fmt.Println("LOG-DEBUG WAIT")
 		_ = pipeReader.Close() // make scanner stop
 		_ = pipeWriter.Close()
 		close(signalChannel) // make sure exiting the program does not re-signal ourselves
