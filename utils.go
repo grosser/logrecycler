@@ -103,7 +103,7 @@ func (b ReaderChannel) Read(p []byte) (n int, err error) {
 func executeCommand(command []string) (io.Reader, chan (int), error) {
 	cmd := exec.Command(command[0], command[1:]...)
 	exit := make(chan int)
-	output := ReaderChannel{make(chan []byte)}
+	output := ReaderChannel{make(chan []byte, 100)}
 
 	// Send all output into a pipe
 	pipeReader, pipeWriter, err := os.Pipe()
