@@ -9,10 +9,16 @@ import (
 	"math/rand"
 	"os"
 	"strconv"
+	"sync"
 	"time"
 )
 
 const Version = "master" // dynamically set by release action
+
+type StreamLine struct {
+	index int
+	line  string
+}
 
 func main() {
 	set, command := parseFlags()
@@ -41,14 +47,12 @@ func main() {
 		defer config.Statsd.Stop()
 	}
 
-	rand.Seed(time.Now().UnixNano())
-
-	var stream io.Reader
+	var streams []io.Reader
 	var exit chan (int)
 
 	if len(command) != 0 {
 		// read from command
-		stream, exit, err = executeCommand(command)
+		streams, exit, err = executeCommand(command)
 		if err != nil {
 			// untested section
 			_, _ = fmt.Fprintln(os.Stderr, err.Error())
@@ -56,14 +60,13 @@ func main() {
 		}
 	} else {
 		// read from stdin
-		stream = os.Stdin
+		streams = []io.Reader{os.Stdin}
 	}
 
 	// process the stream line by line
-	scanner := bufio.NewScanner(stream)
-	for scanner.Scan() {
-		line := scanner.Text()
-		processLine(line, config)
+	lines := combineStreams(streams)
+	for l := range lines {
+		processLine(l, config)
 	}
 
 	// exit with the exit code of the command
@@ -74,6 +77,29 @@ func main() {
 			os.Exit(exitCode)
 		}
 	}
+}
+
+func combineStreams(streams []io.Reader) chan StreamLine {
+	lines := make(chan StreamLine)
+
+	var wg sync.WaitGroup
+	for i, stream := range streams {
+		wg.Add(1)
+		go func(idx int, r io.Reader) {
+			defer wg.Done()
+			scanner := bufio.NewScanner(r)
+			for scanner.Scan() {
+				lines <- StreamLine{idx, scanner.Text()}
+			}
+		}(i, stream)
+	}
+
+	go func() {
+		wg.Wait()
+		close(lines)
+	}()
+
+	return lines
 }
 
 // parse flags ... so we fail on unknown flags and users can call `-help`
@@ -122,7 +148,7 @@ func parseFlags() (*flag.FlagSet, []string) {
 }
 
 // everything in here needs to be extra efficient
-func processLine(line string, config *Config) {
+func processLine(line StreamLine, config *Config) {
 	// build log line ... sets the json key order too
 	log := NewOrderedMap()
 	if config.timestampKeySet {
@@ -131,7 +157,7 @@ func processLine(line string, config *Config) {
 	if config.levelKeySet {
 		log.Set(config.LevelKey, "INFO")
 	}
-	log.Set(config.MessageKey, line)
+	log.Set(config.MessageKey, line.line)
 
 	// preprocess the log line for general purpose cleanup
 	if config.preprocessSet {
@@ -183,7 +209,12 @@ func processLine(line string, config *Config) {
 		}
 	}
 
-	fmt.Println(log.ToJson())
+	// write to where the line came from
+	out := os.Stdout
+	if line.index == 1 {
+		out = os.Stderr
+	}
+	_, _ = fmt.Fprintln(out, log.ToJson())
 
 	// remove keys nobody should be using as metrics, but can get set accidentally via captures
 	delete(log.values, config.MessageKey)

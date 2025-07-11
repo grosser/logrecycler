@@ -113,9 +113,19 @@ var _ = Describe("main", func() {
 		})
 	})
 
-	It("can call command", func() {
+	It("can call a command", func() {
 		withConfig("", func() {
-			Expect(parseCommand("hi\"foo")).To(Equal(`{"message":"hi\"foo"}`))
+			Expect(runWithCommand("echo", "hi\"foo")).To(Equal(`{"message":"hi\"foo"}`))
+		})
+	})
+
+	It("can call a command that produces stdout and stderr", func() {
+		withConfig("", func() {
+			err := captureStderr(func() {
+				out := runWithCommand("sh", "-c", "echo OUT; echo ERR >&2")
+				Expect(out).To(Equal(`{"message":"OUT"}`))
+			})
+			Expect(strings.TrimRight(err, "\n")).To(Equal(`{"message":"ERR"}`))
 		})
 	})
 
@@ -310,12 +320,12 @@ func parse(input string) (output string) {
 	return
 }
 
-func parseCommand(input string) (output string) {
+func runWithCommand(input ...string) (out string) {
 	before := os.Args
-	os.Args = []string{"foo", "--", "echo", input}
+	os.Args = append([]string{"foo", "--"}, input...)
 	defer func() { os.Args = before }()
-	output = captureStdout(func() { main() })
-	output = strings.TrimRight(output, "\n")
+	out = captureStdout(func() { main() })
+	out = strings.TrimRight(out, "\n")
 	return
 }
 
@@ -381,6 +391,28 @@ func captureStdout(fn func()) (captured string) {
 	// back to normal state
 	w.Close()
 	os.Stdout = old // restoring the real
+	captured = <-outC
+	return
+}
+
+func captureStderr(fn func()) (captured string) {
+	old := os.Stderr // keep backup of the real
+	r, w, _ := os.Pipe()
+	os.Stderr = w
+
+	fn()
+
+	outC := make(chan string)
+	// copy the output in a separate goroutine so printing can't block indefinitely
+	go func() {
+		var buf bytes.Buffer
+		io.Copy(&buf, r)
+		outC <- buf.String()
+	}()
+
+	// back to normal state
+	w.Close()
+	os.Stderr = old // restoring the real
 	captured = <-outC
 	return
 }
