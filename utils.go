@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
 	"io"
 	"os"
@@ -84,35 +83,22 @@ func isPipingToStdin() bool {
 	return (stat.Mode() & os.ModeCharDevice) == 0
 }
 
-// ReaderChannel is an io.Reader used to stream command output to the log processor
-type ReaderChannel struct {
-	channel chan ([]byte)
-}
-
-func (b ReaderChannel) Read(p []byte) (n int, err error) {
-	msg, open := <-b.channel
-	if open {
-		copy(p, msg)
-		return len(msg), nil
-	} else {
-		return 0, io.EOF
-	}
-}
-
-// executeCommand executes a shell command and returns a reader from the combined stdout and stderr + exit code channel
-func executeCommand(command []string) (io.Reader, chan (int), error) {
+// executeCommand executes a shell command and returns a readers from stdout and stderr + exit code channel
+func executeCommand(command []string) ([]io.Reader, chan (int), error) {
 	cmd := exec.Command(command[0], command[1:]...)
 	exit := make(chan int)
-	output := ReaderChannel{make(chan []byte, 100)}
 
-	// Send all output into a pipe
-	pipeReader, pipeWriter, err := os.Pipe()
-	if err != nil {
-		// untested section
+	// create pipes for stdout and stderr
+	stdout, err := cmd.StdoutPipe()
+	if err != nil { // untested section
 		return nil, nil, err
 	}
-	cmd.Stdout = pipeWriter
-	cmd.Stderr = pipeWriter
+	stderr, err := cmd.StderrPipe()
+
+	if err != nil { // untested section
+		return nil, nil, err
+	}
+	streams := []io.Reader{stdout, stderr}
 
 	// Start the command
 	err = cmd.Start()
@@ -132,23 +118,12 @@ func executeCommand(command []string) (io.Reader, chan (int), error) {
 		}
 	}()
 
-	// Stream the output to the buffer, to be consumed by the log parser
-	go func() {
-		scanner := bufio.NewScanner(pipeReader)
-		for scanner.Scan() {
-			output.channel <- append(scanner.Bytes(), '\n')
-		}
-		close(output.channel)
-	}()
-
 	// Wait for the command to finish and store the exit code
 	go func() {
 		_ = cmd.Wait()
-		_ = pipeReader.Close() // make scanner stop
-		_ = pipeWriter.Close()
 		close(signalChannel) // make sure exiting the program does not re-signal ourselves
 		exit <- cmd.ProcessState.ExitCode()
 	}()
 
-	return output, exit, nil
+	return streams, exit, nil
 }
