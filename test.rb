@@ -39,6 +39,12 @@ describe "logrecycler" do
 
   let(:full_path) { File.expand_path("./logrecycler", __dir__) }
 
+  it "has a readme yaml example that matches the logrecycler.yaml content" do
+    readme = File.read("Readme.md")[/```yaml\n(.*?)```/m, 1] || raise
+    actual = File.read("logrecycler.yaml")
+    _(readme).must_equal actual
+  end
+
   it "can show help" do
     call("--help").must_include "logrecycler"
   end

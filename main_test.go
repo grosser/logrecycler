@@ -418,9 +418,10 @@ func captureStderr(fn func()) (captured string) {
 }
 
 func withConfig(config string, fn func()) {
-	err := ioutil.WriteFile("logrecycler.yaml", []byte(config), 0644)
+	orig, _ := os.ReadFile("logrecycler.yaml")
+	err := os.WriteFile("logrecycler.yaml", []byte(config), 0644)
 	Expect(err).To(BeNil())
-	defer os.Remove("logrecycler.yaml")
+	defer os.WriteFile("logrecycler.yaml", orig, 0644)
 	fn()
 }
 
