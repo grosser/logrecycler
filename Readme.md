@@ -1,21 +1,31 @@
 # Logrecycler
 
 Re-process logs from applications you cannot modify to:
-- convert plaintext or glog logs from stdin (or command) to json on stdout
+- convert plaintext or glog logs from stdin (or command) to json
 - remove noise
 - add log levels / timestamp / details / captured values
 - emit prometheus metric
 - emit statsd metric
 
 
-## Example
+## Examples
+
+using example `logrecycler.yaml` in project root
 
 ```
-stdin: I0530 10:13:00.740596      33 foo.go:132] error connecting to remote host foobar.com:12345
-stdout: {"ts":"2020-05-30 10:13:00","level":"error","message":"error connecting to remote host","host":"foobar.com","port":"1234","pattern":"connection-error"}
+# glog to json
+$ echo "I0530 10:13:00.740596      33 foo.go:132] error connecting to remote host foobar.com:1234" | ./logrecycler
+{"ts":"2020-05-30 10:13:00","level":"error","message":"error connecting to remote host","host":"foobar.com","port":"1234","pattern":"connection-error"}
 /metrics: log_total{level="error",host="foobar.com",port="1234",pattern="connection-error"} 1
-```
 
+# plaintext to json
+$ echo "error parsing configuration file" | ./logrecycler
+{"ts":"2025-07-12T09:06:22-07:00","level":"ERROR","message":"error parsing configuration file","pattern":"parsing-error"}
+
+# executing commands
+$ ./logrecycler -- echo "Application starting up"
+{"ts":"2025-07-12T09:06:33-07:00","level":"INFO","message":"Application starting up","pattern":"unknown"}
+```
 
 # Setup
 
@@ -31,7 +41,9 @@ curl -sfL <PICK URL FROM RELEASES PAGE> | tar -zx && chmod +x logrecycler && ./l
 
 ### Option 2: Build from source
 
-```
+#### Using Docker
+
+```bash
 RUN apt-get update && \
     apt-get install -y --no-install-recommends git make golang && \
     rm -rf /var/lib/apt/lists/* && \
@@ -39,10 +51,18 @@ RUN apt-get update && \
     cd logrecycler && make && ./logrecycler --version
 ```
 
+#### Local Build
+
+```bash
+make
+./logrecycler --version
+```
+
 ## Configure
 
 Configure a `logrecycler.yaml` in your project root:
 
+<!-- keep in sync with logrecycler.yaml -->
 ```yaml
 # optional settings
 # timestampKey: ts # what to call the timestamp in the logs (for example @timestamp, ts, leave empty for no timestamp)
@@ -92,7 +112,7 @@ patterns:
 - regex: 'todays weather is'
   discard: true
 # mark all unmatched as unknown so we can alert on it
-- pattern: '' # catch all
+- regex: '' # catch all
   level: WARN
   add:
     pattern: unknown
