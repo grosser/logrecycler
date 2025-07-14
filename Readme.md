@@ -39,9 +39,14 @@ Download the [latest binary](https://github.com/grosser/logrecycler/releases):
 curl -sfL <PICK URL FROM RELEASES PAGE> | tar -zx && chmod +x logrecycler && ./logrecycler --version
 ```
 
-### Option 2: Build from source
+### Option 2: Local build from source
 
-#### Using Docker
+```bash
+make
+./logrecycler --version
+```
+
+#### Option 3: Docker build from source
 
 ```bash
 RUN apt-get update && \
@@ -49,13 +54,6 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/* && \
     git clone https://github.com/grosser/logrecycler.git logrecycler --quiet --depth=1 --branch grosser/native && \
     cd logrecycler && make && ./logrecycler --version
-```
-
-#### Local Build
-
-```bash
-make
-./logrecycler --version
 ```
 
 ## Configure
