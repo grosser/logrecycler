@@ -122,7 +122,6 @@ you should `strip` the logrecycler binary, to avoid false positive vulnerability
 
 ## Test
 
-- `go get github.com/grosser/go-testcov`
 - install any version of ruby (used for integration tests)
 - `make test`
 

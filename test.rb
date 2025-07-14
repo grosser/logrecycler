@@ -7,6 +7,7 @@ require "minitest/autorun"
 require "tmpdir"
 require "timeout"
 require "benchmark"
+require "open3"
 
 def sh(command, expected_exit: 0, timeout: 1)
   result = Timeout.timeout(timeout, RuntimeError, "Timed out when running #{command}") { `#{command} 2>&1` }
@@ -31,11 +32,12 @@ describe "logrecycler" do
   end
 
   def call(extra, pipe: "", **args)
-    full_path = File.expand_path("./logrecycler", __dir__)
     command = "#{full_path} #{extra}"
     command = "echo #{pipe} | #{command}" if pipe
     _(sh(command, **args))
   end
+
+  let(:full_path) { File.expand_path("./logrecycler", __dir__) }
 
   it "can show help" do
     call("--help").must_include "logrecycler"
@@ -98,6 +100,14 @@ describe "logrecycler" do
         _(duration).must_be :>=, wait
         _(duration).must_be :<=, wait * 2 # make sure it does not just always wait 1s
       end
+    end
+
+    it "outouts to stdout / stderr as it comes in" do
+      out, err, status = with_config "" do
+        Open3.capture3('echo "OUT"; echo "ERR" >&2')
+      end
+      _(out).must_equal "OUT\n"
+      _(err).must_equal "ERR\n"
     end
 
     it "returns the commands exit code" do
