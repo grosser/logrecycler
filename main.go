@@ -176,7 +176,8 @@ func processLine(line StreamLine, config *Config) {
 	// parse our json
 	if config.jsonSet {
 		message := log.values[config.MessageKey]
-		if message[0] == '{' && message[len(message)-1] == '}' {
+		messageLen := len(message)
+		if messageLen != 0 && message[0] == '{' && message[messageLen-1] == '}' {
 			captureJson(config, log)
 		}
 	}
