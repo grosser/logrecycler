@@ -129,6 +129,12 @@ var _ = Describe("main", func() {
 		})
 	})
 
+	It("can parse empty lines", func() {
+		withConfig("", func() {
+			Expect(parse("\n")).To(Equal(`{"message":""}`))
+		})
+	})
+
 	Context("Glog", func() {
 		It("parses simple", func() {
 			withConfig("---\nglog: simple", func() {
@@ -148,6 +154,12 @@ var _ = Describe("main", func() {
 			withConfig("---\nglog: simple\ntimestampKey: ts", func() {
 				Expect(parse("I0203 02:03:04.12345     123 foo.go:123] hi")).
 					To(Equal(`{"ts":"` + fmt.Sprint(time.Now().Year()) + `-02-03T02:03:04Z","message":"hi"}`))
+			})
+		})
+
+		It("can parse empty lines", func() {
+			withConfig("---\nglog: simple", func() {
+				Expect(parse("\n")).To(Equal(`{"message":""}`))
 			})
 		})
 	})
@@ -171,6 +183,12 @@ var _ = Describe("main", func() {
 			withConfig("---\njson: simple", func() {
 				Expect(parse("{}}}")).
 					To(Equal(`{"message":"{}}}"}`))
+			})
+		})
+
+		It("can parse empty lines", func() {
+			withConfig("---\njson: simple", func() {
+				Expect(parse("\n")).To(Equal(`{"message":""}`))
 			})
 		})
 	})
