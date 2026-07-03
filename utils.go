@@ -63,7 +63,7 @@ func helpfulMustCompile(expr string, location string) *regexp.Regexp {
 	compiled, err := regexp.Compile(expr)
 	if err != nil {
 		// untested section
-		_, _ = fmt.Fprintf(os.Stderr, "Error: regular expression from "+location+": "+err.Error())
+		_, _ = fmt.Fprintf(os.Stderr, "Error: regular expression from %s: %v", location, err)
 		os.Exit(1)
 	}
 	return compiled
