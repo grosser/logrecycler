@@ -33,7 +33,7 @@ func main() {
 	config, err := NewConfig("logrecycler.yaml")
 	if err != nil {
 		// untested section
-		_, _ = fmt.Fprintf(os.Stderr, "Error: %v\n", err.Error())
+		_, _ = fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 		os.Exit(2)
 	}
 
@@ -111,7 +111,7 @@ func parseFlags() (*flag.FlagSet, []string) {
 	set := flag.NewFlagSet(programName, flag.ContinueOnError)
 
 	set.Usage = func() { // untested section
-		_, _ = fmt.Fprintf(
+		_, _ = fmt.Fprint(
 			os.Stderr,
 			"logrecycler "+Version+"\n"+
 				"pipe logs to logrecycler to convert them into json logs with custom tags\n"+
