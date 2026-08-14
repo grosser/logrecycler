@@ -3,6 +3,8 @@ on:
   release:
     types:
     - created # on push does not work and `on: release` triggers 3 builds
+permissions:
+  contents: write # upload release assets
 jobs:
   release:
     runs-on: ubuntu-latest
