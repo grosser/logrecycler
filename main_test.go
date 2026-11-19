@@ -135,6 +135,43 @@ var _ = Describe("main", func() {
 		})
 	})
 
+	// https://github.com/grosser/logrecycler/issues/36
+	It("keeps draining a stream when a line exceeds the default scanner size", func() {
+		longLine := strings.Repeat("x", maxLineLen+1)
+		r, w := io.Pipe()
+		go func() {
+			w.Write([]byte("before\n"))
+			w.Write([]byte(longLine + "\n"))
+			w.Write([]byte("after\n"))
+			w.Close()
+		}()
+
+		var messages []string
+		for line := range combineStreams([]io.Reader{r}) {
+			messages = append(messages, line.line)
+		}
+		Expect(messages).To(Equal([]string{
+			"before",
+			strings.Repeat("x", maxLineLen) + " (truncated)",
+			"after",
+		}))
+	})
+
+	It("does not truncate a line that exactly fits the limit", func() {
+		line := strings.Repeat("x", maxLineLen)
+		r, w := io.Pipe()
+		go func() {
+			w.Write([]byte(line + "\n"))
+			w.Close()
+		}()
+
+		var messages []string
+		for l := range combineStreams([]io.Reader{r}) {
+			messages = append(messages, l.line)
+		}
+		Expect(messages).To(Equal([]string{line}))
+	})
+
 	Context("Glog", func() {
 		It("parses simple", func() {
 			withConfig("---\nglog: simple", func() {

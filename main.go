@@ -9,11 +9,14 @@ import (
 	"math/rand"
 	"os"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 )
 
 const Version = "master" // dynamically set by release action
+
+const maxLineLen = 64 * 1024
 
 type StreamLine struct {
 	index int
@@ -87,10 +90,9 @@ func combineStreams(streams []io.Reader) chan StreamLine {
 		wg.Add(1)
 		go func(idx int, r io.Reader) {
 			defer wg.Done()
-			scanner := bufio.NewScanner(r)
-			for scanner.Scan() {
-				lines <- StreamLine{idx, scanner.Text()}
-			}
+			readLines(r, maxLineLen, func(line string) {
+				lines <- StreamLine{idx, line}
+			})
 		}(i, stream)
 	}
 
@@ -100,6 +102,42 @@ func combineStreams(streams []io.Reader) chan StreamLine {
 	}()
 
 	return lines
+}
+
+// read newline delimited lines, overlong lines are truncated and marked but still
+// consumed, so a child writing huge lines can never block on a full pipe
+func readLines(r io.Reader, maxLen int, fn func(string)) {
+	reader := bufio.NewReaderSize(r, maxLen+1) // +1 so ErrBufferFull only happens for lines over maxLen
+	for {
+		var line []byte
+		truncated := false
+		for {
+			fragment, err := reader.ReadSlice('\n')
+			end := len(fragment)
+			if err == nil {
+				end-- // the newline is a delimiter, not part of the line
+			}
+			if len(line)+end > maxLen {
+				end = maxLen - len(line)
+				truncated = true
+			}
+			line = append(line, fragment[:end]...)
+			if err == bufio.ErrBufferFull {
+				continue // line continues in the next buffer
+			}
+			if len(line) != 0 || err == nil {
+				if truncated {
+					line = append(line, " (truncated)"...)
+				}
+				text := strings.TrimSuffix(string(line), "\n")
+				fn(strings.TrimSuffix(text, "\r"))
+			}
+			if err != nil {
+				return // EOF with no pending bytes or a real read error
+			}
+			break
+		}
+	}
 }
 
 // parse flags ... so we fail on unknown flags and users can call `-help`
